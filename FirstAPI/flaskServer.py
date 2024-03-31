@@ -1,19 +1,44 @@
 from flask import Flask, request, jsonify
-import requests
 from newspaper import Article
-from pymongo import MongoClient
+import pymysql
+import requests
 
 app = Flask(__name__)
 
-try:
-    client = MongoClient(
-        "mongodb+srv://ks_cold:Tmdcks6502%40@practicedb.rf3w9v5.mongodb.net/"
-    )
-    db = client["TMS"]
-    collection = db["news"]
-    print("MongoDB 클라이언트가 성공적으로 연결되었습니다.")
-except Exception as e:
-    print("MongoDB 클라이언트 연결 중 오류 발생:", e)
+# MySQL 연결 설정
+db = pymysql.connect(
+    host="ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com",
+    port=3306,
+    user="kscold",
+    password="Tmdcks6502@",
+    db="TMSDB",
+    charset="utf8",
+)
+
+# 데이터베이스 커서 생성
+cursor = db.cursor()
+
+# 테이블 생성 쿼리
+create_table_query = """
+CREATE TABLE IF NOT EXISTS news (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    content TEXT,
+    createdDate VARCHAR(255),
+    category VARCHAR(255),
+    image VARCHAR(255), 
+    link VARCHAR(255)
+)
+"""
+
+# 테이블 생성 쿼리 실행
+cursor.execute(create_table_query)
+db.commit()
+
+
+# 테이블 생성 쿼리 실행
+cursor.execute(create_table_query)
+db.commit()
 
 # 네이버 API 요청 헤더 정보
 headers = {
@@ -41,35 +66,32 @@ def save_news(keyword):
             original_link = item.get("originallink", "")
             pubDate = item.get("pubDate", "")
 
-            # 데이터베이스에서 해당 제목의 기사가 이미 존재하는지 확인
-            existing_article = collection.find_one({"title": title})
-            if existing_article:
-                print(f"이미 존재하는 기사입니다: {title}")
-                continue
-
+            # 기사 내용 가져오기
             try:
-                article = Article(original_link, language="ko")
+                article = Article(original_link)
                 article.download()
                 article.parse()
-
-                # 기사 내용 및 이미지 가져오기
                 content = article.text
-                image_url = article.top_image if article.top_image else ""
-
-                # 데이터베이스에 저장
-                collection.insert_one(
-                    {
-                        "title": title,
-                        "original_link": original_link,
-                        "pubDate": pubDate,
-                        "content": content,
-                        "image_url": image_url,
-                        "category": query,  # 카테고리로 설정
-                    }
-                )
-                print(f"새로운 기사를 저장했습니다: {title}")
+                image_url = (
+                    article.top_image if article.top_image else ""
+                )  # 이미지 URL 가져오기
             except Exception as e:
                 print("기사 내용을 가져오는 중 오류 발생:", e)
+                content = ""
+                image_url = ""
+
+            # SQL query 작성
+            sql = "INSERT INTO news (title, content, createdDate, category, image, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            val = (title, content, pubDate, query, image_url, original_link)
+
+            try:
+                # SQL query 실행
+                cursor.execute(sql, val)
+                # db 데이터 수정 사항 저장
+                db.commit()
+                print(f"새로운 기사를 저장했습니다: {title}")
+            except Exception as e:
+                print("기사를 저장하는 중 오류 발생:", e)
 
         return jsonify({"message": "뉴스 기사 저장 완료"})
     else:
@@ -81,10 +103,14 @@ def get_news(keyword):
     # 요청으로부터 키워드 받기
     query = keyword
 
-    # 데이터베이스에서 해당 키워드(카테고리)에 대한 뉴스 기사 조회
-    news_articles = list(
-        collection.find({"category": query}, {"_id": 0})
-    )  # '_id' 필드 제거
+    # SQL query 작성
+    sql = f"SELECT * FROM news WHERE title LIKE '%{query}%'"
+
+    # SQL query 실행
+    cursor.execute(sql)
+
+    # 검색 결과 가져오기
+    news_articles = cursor.fetchall()
 
     if news_articles:
         return jsonify(news_articles)
