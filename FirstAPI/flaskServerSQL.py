@@ -23,7 +23,7 @@ create_table_query = """
 CREATE TABLE IF NOT EXISTS news (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
-    content TEXT,
+    content VARCHAR(65535),
     createdDate VARCHAR(255),
     category VARCHAR(255),
     image VARCHAR(255), 
