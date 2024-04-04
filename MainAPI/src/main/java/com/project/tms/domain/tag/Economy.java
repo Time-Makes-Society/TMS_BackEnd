@@ -1,6 +1,7 @@
 package com.project.tms.domain.tag;
 
-import com.project.tms.domain.Tag;
+import jakarta.persistence.Entity;
 
+@Entity
 public class Economy extends Tag {
 }

@@ -7,9 +7,10 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table
 @Getter @Setter
 public class Member {
 
@@ -18,10 +19,21 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-//    @NonNull
-    @Column(unique = true, length=10)
+    @NonNull
+//    @Column(unique = true, length=10)
+    @Column(unique = true)
     private String memberName;
+
+    private String passWord;
 
     @JsonFormat(pattern = "HH:mm:ss")
     private LocalDateTime totalReadTime;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<MemberTag> tagList = new ArrayList<>();
+
+    // getTagList 메서드
+    public List<MemberTag> getTagList() {
+        return this.tagList;
+    }
 }
