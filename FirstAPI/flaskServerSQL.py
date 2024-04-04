@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS news (
     content LONGTEXT,
     createdDate VARCHAR(255),
     category VARCHAR(255),
-    image VARCHAR(255),
+    image VARCHAR(255), 
     link VARCHAR(255)
 )
 """
