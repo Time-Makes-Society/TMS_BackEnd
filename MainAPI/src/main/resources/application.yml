@@ -4,29 +4,52 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
-    username: root
-    password: 3516
-#    url: jdbc:mysql://ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com:3306/TMSDB
-#    username: kscold
-#    password: Tmdcks6502@
+    #   박혜정 local
+    #    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
+    #    username: root
+    #    password: 3516
 
+    #    ec2
+    #    url: jdbc:mysql://ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com:3306/TMSDB
+    #    username: kscold
+    #    password: Tmdcks6502@
+
+    #    김승찬 local
+    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
+    username: root
+    password: Tmdcks6502@
+
+  #  jpa:
+  #    properties:
+  #      hibernate:
+  #        show_sql: true
+  #        format_sql: true
+  #        use_sql_comments: true
+  #    hibernate:
+  #      ddl-auto: create
+  #    database-platform: org.hibernate.dialect.MySQLDialect
+  #    show-sql: true
   jpa:
     properties:
       hibernate:
         show_sql: true
         format_sql: true
+        use_sql_comments: true
     hibernate:
       ddl-auto: create
+      naming:
+        # 네이밍할때 _ 안붙이고 카멜케이스로 만들어주는 속성
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
+
 
 #logging.level:
 #  org.hibernate.SQL: debug
 
 logging:
   level:
-#    root: INFO
+    #    root: INFO
     web.login: DEBUG
     org.hibernate.SQL: DEBUG
 

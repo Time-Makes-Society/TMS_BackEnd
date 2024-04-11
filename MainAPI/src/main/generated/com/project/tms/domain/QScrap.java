@@ -22,11 +22,11 @@ public class QScrap extends EntityPathBase<Scrap> {
 
     public static final QScrap scrap = new QScrap("scrap");
 
-    public final QArticle article;
-
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final QMember member;
+
+    public final QUUIDArticle uuidArticle;
 
     public QScrap(String variable) {
         this(Scrap.class, forVariable(variable), INITS);
@@ -46,8 +46,8 @@ public class QScrap extends EntityPathBase<Scrap> {
 
     public QScrap(Class<? extends Scrap> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.article = inits.isInitialized("article") ? new QArticle(forProperty("article")) : null;
         this.member = inits.isInitialized("member") ? new QMember(forProperty("member")) : null;
+        this.uuidArticle = inits.isInitialized("uuidArticle") ? new QUUIDArticle(forProperty("uuidArticle")) : null;
     }
 
 }

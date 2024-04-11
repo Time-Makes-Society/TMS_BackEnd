@@ -10,14 +10,16 @@ import com.querydsl.core.types.Path;
 
 
 /**
- * QArticle is a Querydsl query type for Article
+ * QUUIDArticle is a Querydsl query type for UUIDArticle
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QArticle extends EntityPathBase<Article> {
+public class QUUIDArticle extends EntityPathBase<UUIDArticle> {
 
-    private static final long serialVersionUID = -1940721022L;
+    private static final long serialVersionUID = 2078390375L;
 
-    public static final QArticle article = new QArticle("article");
+    public static final QUUIDArticle uUIDArticle = new QUUIDArticle("uUIDArticle");
+
+    public final StringPath articleTime = createString("articleTime");
 
     public final StringPath category = createString("category");
 
@@ -25,7 +27,7 @@ public class QArticle extends EntityPathBase<Article> {
 
     public final StringPath createdDate = createString("createdDate");
 
-    public final NumberPath<Integer> id = createNumber("id", Integer.class);
+    public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
 
     public final StringPath image = createString("image");
 
@@ -33,16 +35,16 @@ public class QArticle extends EntityPathBase<Article> {
 
     public final StringPath title = createString("title");
 
-    public QArticle(String variable) {
-        super(Article.class, forVariable(variable));
+    public QUUIDArticle(String variable) {
+        super(UUIDArticle.class, forVariable(variable));
     }
 
-    public QArticle(Path<? extends Article> path) {
+    public QUUIDArticle(Path<? extends UUIDArticle> path) {
         super(path.getType(), path.getMetadata());
     }
 
-    public QArticle(PathMetadata metadata) {
-        super(Article.class, metadata);
+    public QUUIDArticle(PathMetadata metadata) {
+        super(UUIDArticle.class, metadata);
     }
 
 }

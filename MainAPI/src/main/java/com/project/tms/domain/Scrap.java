@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 import static jakarta.persistence.FetchType.*;
 
 @Entity
@@ -22,6 +24,6 @@ public class Scrap {
     private Member member;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "article_id")
-    private Article article;
+    @JoinColumn(name = "uuid_id")
+    private UUIDArticle uuidArticle;
 }
