@@ -1,5 +1,6 @@
 package com.project.tms.service;
 
+import com.project.tms.domain.Article;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.MemberTag;
 import com.project.tms.domain.tag.Tag;
@@ -60,7 +61,6 @@ public class MemberService {
         }
         memberRepository.save(member);
     }
-
 
     public Optional<Member> findById(Long memberId) {
         return memberRepository.findById(memberId);
