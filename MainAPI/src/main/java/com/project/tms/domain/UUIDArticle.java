@@ -29,4 +29,5 @@ public class UUIDArticle {
     private String category;
     private String image;
     private String link;
+    private String articleTime;
 }

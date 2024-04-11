@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/articles")
+@RequestMapping("/api/articles")
 public class ArticleController {
 
     @Autowired
@@ -58,7 +58,7 @@ public class ArticleController {
     }
 
     // flaks 전처리 서버를 작동시켜 pre_news를 데이터를 UUID가 붙은 news 데이터로 저장하는 메서드
-    @GetMapping("/{category}")
+    @GetMapping("/firstAPI/{category}")
     public ResponseEntity<String> refreshAndConvertToUUID(@PathVariable(name = "category") String category) throws UnsupportedEncodingException {
         // http://localhost:8081/newssave/category로 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
@@ -86,10 +86,26 @@ public class ArticleController {
             uuidArticle.setImage(article.getImage());
             uuidArticle.setLink(article.getLink());
 
+            // content의 글자 수 계산
+            int contentLength = article.getContent().length();
+            // 한국 사람이 평균적으로 1분에 읽는 글자 수
+            int charsPerMinute = 1000; // 1분에 1000자
+
+            // content의 글자 수를 평균 읽기 속도로 나누어서 읽는 시간 계산
+            int readingTimeInMinutes = (int) Math.ceil((double) contentLength / charsPerMinute);
+
+            // 계산된 읽는 시간을 분과 초로 변환하여 저장
+            int minutes = readingTimeInMinutes % 60;
+            int seconds = (int) ((contentLength % charsPerMinute) * 60.0 / charsPerMinute);
+
+            String articleTime = String.format("약 %d분 %d초", minutes, seconds);
+            uuidArticle.setArticleTime(articleTime);
+
             // 새로운 엔티티 저장
             uuidArticleRepository.save(uuidArticle);
         }
     }
+
 
     // UUID이 붙은 Article 데이터를 가져오는 메서드
     @GetMapping("/uuid")

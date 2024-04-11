@@ -19,6 +19,8 @@ public class QUUIDArticle extends EntityPathBase<UUIDArticle> {
 
     public static final QUUIDArticle uUIDArticle = new QUUIDArticle("uUIDArticle");
 
+    public final StringPath articleTime = createString("articleTime");
+
     public final StringPath category = createString("category");
 
     public final StringPath content = createString("content");
