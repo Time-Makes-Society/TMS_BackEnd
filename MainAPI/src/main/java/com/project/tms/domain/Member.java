@@ -2,14 +2,15 @@ package com.project.tms.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.*;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table
 @Getter @Setter
 public class Member {
 
@@ -18,10 +19,24 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-//    @NonNull
-    @Column(unique = true, length=10)
-    private String memberName;
+
+    @Column(unique = true, length=20, nullable = false)
+    private String loginId; // 사용자 로그인 ID
+
+    @Column(nullable = false)
+    private String password; // 비밀번호
+
+    @Column(nullable = false)
+    private String memberName; // 사용자 이름
 
     @JsonFormat(pattern = "HH:mm:ss")
     private LocalDateTime totalReadTime;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<MemberTag> tagList = new ArrayList<>();
+
+    // getTagList 메서드
+    public List<MemberTag> getTagList() {
+        return this.tagList;
+    }
 }

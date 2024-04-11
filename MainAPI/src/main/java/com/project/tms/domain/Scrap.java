@@ -11,8 +11,11 @@ import static jakarta.persistence.FetchType.*;
 @Getter @Setter
 public class Scrap {
 
-    @EmbeddedId
-    private ScrapId id;
+//    @EmbeddedId
+//    private ScrapId id;
+
+    @Id @GeneratedValue
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")

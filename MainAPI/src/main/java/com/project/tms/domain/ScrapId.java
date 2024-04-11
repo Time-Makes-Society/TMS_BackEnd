@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @Embeddable
 public class ScrapId implements Serializable {
@@ -12,5 +13,5 @@ public class ScrapId implements Serializable {
     private Long memberId;
 
     @Column(name = "article_id", insertable = false, updatable = false)
-    private Long articleId;
+    private UUID articleId;
 }

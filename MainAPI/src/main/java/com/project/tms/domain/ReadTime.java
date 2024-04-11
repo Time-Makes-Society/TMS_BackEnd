@@ -13,8 +13,10 @@ import static jakarta.persistence.FetchType.LAZY;
 @Getter @Setter
 public class ReadTime {
 
-    @EmbeddedId
-    private ReadTimeId id;
+//    @EmbeddedId
+//    private ReadTimeId id;
+    @Id @GeneratedValue
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
