@@ -6,10 +6,20 @@ import requests
 app = Flask(__name__)
 
 # MySQL 연결 설정
+# ec2 설정
+# db = pymysql.connect(
+#     host="ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com",
+#     port=3306,
+#     user="kscold",
+#     password="Tmdcks6502@",
+#     db="TMSDB",
+#     charset="utf8",
+# )
+# MySQL 로컬 DB로 설정
 db = pymysql.connect(
-    host="ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com",
+    host="localhost",
     port=3306,
-    user="kscold",
+    user="root",
     password="Tmdcks6502@",
     db="TMSDB",
     charset="utf8",
