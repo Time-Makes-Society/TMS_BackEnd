@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScrapRepository extends JpaRepository<Scrap, Long> {
     void deleteByMemberAndUuidArticle(Member member, UUIDArticle uuidArticle);
+
+    void deleteByUuidArticle(UUIDArticle uuidArticle);
 }

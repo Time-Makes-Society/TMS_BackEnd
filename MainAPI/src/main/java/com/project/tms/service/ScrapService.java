@@ -44,10 +44,12 @@ public class ScrapService {
     /**
      * 기사 스크랩 취소
      */
+    @Transactional
     public void scrapCancel(Long memberId, UUID articleId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("Member not found"));
         UUIDArticle uuidArticle = uuidArticleRepository.findById(articleId).orElseThrow(() -> new IllegalArgumentException("Article not found"));
 
         scrapRepository.deleteByMemberAndUuidArticle(member, uuidArticle);
+
     }
 }
