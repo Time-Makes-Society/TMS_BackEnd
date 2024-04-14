@@ -114,10 +114,5 @@ public class ArticleController {
         return ResponseEntity.ok(uuidArticles);
     }
 
-    // ID가 1인 기사를 가져오는 엔드포인트
-    @GetMapping("/id1")
-    public ResponseEntity<Article> getArticleById1() {
-        Optional<Article> optionalArticle = articleRepository.findById(1L); // ID가 1인 기사를 가져옴
-        return optionalArticle.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
+
 }

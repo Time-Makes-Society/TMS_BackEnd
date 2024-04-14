@@ -5,9 +5,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     #   박혜정 local
-    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
-    username: root
-    password: 3516
+#    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
+#    username: root
+#    password: 3516
 
     #    ec2
     #    url: jdbc:mysql://ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com:3306/TMSDB
@@ -15,9 +15,9 @@ spring:
     #    password: Tmdcks6502@
 
     #    김승찬 local
-#    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
-#    username: root
-#    password: Tmdcks6502@
+    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
+    username: root
+    password: Tmdcks6502@
 
   #  jpa:
   #    properties:
@@ -57,3 +57,4 @@ server:
   servlet:
     session:
       timeout: 1800
+
