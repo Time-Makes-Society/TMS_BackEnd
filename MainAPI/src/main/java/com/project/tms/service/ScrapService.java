@@ -33,13 +33,17 @@ public class ScrapService {
         UUIDArticle uuidArticle = uuidArticleRepository.findById(articleId).orElseThrow(()
                 -> new IllegalArgumentException("Article not found"));
 
+        if (!scrapRepository.existsByMemberAndUuidArticle(member, uuidArticle)) {
+            Scrap scrap = new Scrap();
+            scrap.setMember(member);
+            scrap.setUuidArticle(uuidArticle);
 
-        Scrap scrap = new Scrap();
-        scrap.setMember(member);
-        scrap.setUuidArticle(uuidArticle);
-
-        scrapRepository.save(scrap);
+            scrapRepository.save(scrap);
+        } else {
+            throw new IllegalStateException("이미 해당 기사를 스크랩했습니다.");
+        }
     }
+
 
     /**
      * 기사 스크랩 취소

@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface ScrapRepository extends JpaRepository<Scrap, Long> {
     void deleteByMemberAndUuidArticle(Member member, UUIDArticle uuidArticle);
 
-    void deleteByUuidArticle(UUIDArticle uuidArticle);
+    boolean existsByMemberAndUuidArticle(Member member, UUIDArticle uuidArticle);
 }
