@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -19,7 +21,11 @@ public class Article {
     @Lob
     @Column(columnDefinition = "text")
     private String content;
-    private String createdDate;
+
+    //    private String createdDate;
+    // String에서 LocalDateTime으로 변경
+    private LocalDateTime createdDate;
+
     private String category;
     private String image;
     private String link;

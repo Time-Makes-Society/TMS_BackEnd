@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,7 +26,8 @@ public class UUIDArticle {
     @Column(columnDefinition = "text")
     private String content;
 
-    private String createdDate;
+    //    private String createdDate;
+    private LocalDateTime createdDate;
     private String category;
     private String image;
     private String link;

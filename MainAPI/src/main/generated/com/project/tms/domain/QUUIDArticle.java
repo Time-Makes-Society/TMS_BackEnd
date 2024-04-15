@@ -25,7 +25,7 @@ public class QUUIDArticle extends EntityPathBase<UUIDArticle> {
 
     public final StringPath content = createString("content");
 
-    public final StringPath createdDate = createString("createdDate");
+    public final DateTimePath<java.time.LocalDateTime> createdDate = createDateTime("createdDate", java.time.LocalDateTime.class);
 
     public final ComparablePath<java.util.UUID> id = createComparable("id", java.util.UUID.class);
 

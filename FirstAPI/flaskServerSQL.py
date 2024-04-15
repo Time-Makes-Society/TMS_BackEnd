@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from newspaper import Article
 import pymysql
 import requests
+from datetime import datetime
+from dateutil import parser
 
 app = Flask(__name__)
 
@@ -34,7 +36,7 @@ CREATE TABLE IF NOT EXISTS pre_news (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255),
     content TEXT,
-    createdDate VARCHAR(255),
+    createdDate DATETIME,
     category VARCHAR(255),
     image VARCHAR(255), 
     link VARCHAR(255)
@@ -76,7 +78,7 @@ def save_news(keyword):
         return jsonify({"message": "해당 카테고리는 지원되지 않습니다."})
 
     # 네이버 API로 뉴스 검색 요청 보내기
-    url = f"https://openapi.naver.com/v1/search/news.json?display=30&query={category}&sort=date"
+    url = f"https://openapi.naver.com/v1/search/news.json?display=10&query={category}&sort=date"
     response = requests.get(url, headers=headers)
     data = response.json()
 
@@ -109,9 +111,12 @@ def save_news(keyword):
                 print("기사 내용을 가져오는 중 오류 발생:", e)
                 continue
 
+            # pubDate를 LocalDateTime으로 변환
+            createdDate = parser.parse(pubDate).strftime("%Y-%m-%d %H:%M:%S")
+
             # SQL query 작성
             sql = "INSERT INTO pre_news (title, content, createdDate, category, image, link) VALUES (%s, %s, %s, %s, %s, %s)"
-            val = (title, content, pubDate, query, image_url, original_link)
+            val = (title, content, createdDate, query, image_url, original_link)
 
             try:
                 # SQL query 실행

@@ -4,7 +4,14 @@ import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +23,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -108,11 +119,50 @@ public class ArticleController {
 
 
     // UUID이 붙은 Article 데이터를 가져오는 메서드
+//    @GetMapping("/uuid")
+//    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
+//        Pageable pageableWithDefaultSize = PageRequest.of(pageable.getPageNumber(), 10);
+//        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryIn(categories, pageableWithDefaultSize);
+//        return ResponseEntity.ok(uuidArticles);
+//    }
     @GetMapping("/uuid")
-    public ResponseEntity<List<UUIDArticle>> getAllUUIDArticles() {
-        List<UUIDArticle> uuidArticles = uuidArticleRepository.findAll();
+    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
+        Pageable pageableWithDefaultSize = PageRequest.of(pageable.getPageNumber(), 10);
+        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryInOrderByCreatedDateDesc(categories, pageableWithDefaultSize);
         return ResponseEntity.ok(uuidArticles);
     }
 
+
+
+//    @Transactional
+//    @GetMapping("/uuid")
+//    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") String categories, Pageable pageable) {
+//        List<String> categoryList = Arrays.asList(categories.split(","));
+//        // JPAQueryFactory를 생성
+//        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+//        // 카테고리별로 조건을 만들어서 OR 연산
+//        BooleanExpression categoryExpressions = null;
+//        for (String category : categoryList) {
+//            if (categoryExpressions == null) {
+//                categoryExpressions = uuidArticle.category.eq(category);
+//            } else {
+//                categoryExpressions = categoryExpressions.or(uuidArticle.category.eq(category));
+//            }
+//        }
+//        // 생성된 조건으로 쿼리 실행
+//        List<UUIDArticle> articles = queryFactory.selectFrom(uuidArticle)
+//                .where(categoryExpressions)
+//                .orderBy(uuidArticle.createdDate.desc())
+//                .offset(pageable.getOffset())
+//                .limit(pageable.getPageSize())
+//                .fetch();
+//        // 카운트 쿼리 실행
+//        long total = queryFactory.selectFrom(uuidArticle)
+//                .where(categoryExpressions)
+//                .fetchCount();
+//        // 페이지 객체 생성 및 반환
+//        Page<UUIDArticle> pageResult = new PageImpl<>(articles, pageable, total);
+//        return ResponseEntity.ok(pageResult);
+//    }
 
 }
