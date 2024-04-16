@@ -93,6 +93,7 @@ public class ArticleController {
             uuidArticle.setTitle(article.getTitle());
             uuidArticle.setContent(article.getContent());
             uuidArticle.setCreatedDate(article.getCreatedDate());
+            uuidArticle.setPublisher(article.getPublisher());
             uuidArticle.setCategory(article.getCategory());
             uuidArticle.setImage(article.getImage());
             uuidArticle.setLink(article.getLink());

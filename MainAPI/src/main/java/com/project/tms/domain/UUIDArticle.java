@@ -28,6 +28,7 @@ public class UUIDArticle {
 
     //    private String createdDate;
     private LocalDateTime createdDate;
+    private String publisher;
     private String category;
     private String image;
     private String link;

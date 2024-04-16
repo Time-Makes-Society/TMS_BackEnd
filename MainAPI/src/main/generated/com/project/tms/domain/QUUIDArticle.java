@@ -33,6 +33,8 @@ public class QUUIDArticle extends EntityPathBase<UUIDArticle> {
 
     public final StringPath link = createString("link");
 
+    public final StringPath publisher = createString("publisher");
+
     public final StringPath title = createString("title");
 
     public QUUIDArticle(String variable) {

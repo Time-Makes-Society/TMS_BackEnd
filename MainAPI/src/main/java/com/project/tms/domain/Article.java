@@ -25,6 +25,7 @@ public class Article {
     //    private String createdDate;
     // String에서 LocalDateTime으로 변경
     private LocalDateTime createdDate;
+    private String publisher;
 
     private String category;
     private String image;

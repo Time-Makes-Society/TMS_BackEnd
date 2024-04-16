@@ -31,6 +31,8 @@ public class QArticle extends EntityPathBase<Article> {
 
     public final StringPath link = createString("link");
 
+    public final StringPath publisher = createString("publisher");
+
     public final StringPath title = createString("title");
 
     public QArticle(String variable) {

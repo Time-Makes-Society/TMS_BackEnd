@@ -3,6 +3,7 @@ from newspaper import Article
 import pymysql
 import requests
 from datetime import datetime
+from urllib.parse import urlparse
 from dateutil import parser
 
 app = Flask(__name__)
@@ -39,7 +40,8 @@ CREATE TABLE IF NOT EXISTS pre_news (
     createdDate DATETIME,
     category VARCHAR(255),
     image VARCHAR(255), 
-    link VARCHAR(255)
+    link VARCHAR(255),
+    publisher VARCHAR(255)
 )
 """
 
@@ -115,8 +117,27 @@ def save_news(keyword):
             createdDate = parser.parse(pubDate).strftime("%Y-%m-%d %H:%M:%S")
 
             # SQL query 작성
-            sql = "INSERT INTO pre_news (title, content, createdDate, category, image, link) VALUES (%s, %s, %s, %s, %s, %s)"
-            val = (title, content, createdDate, query, image_url, original_link)
+            # sql = "INSERT INTO pre_news (title, content, createdDate, category, image, link) VALUES (%s, %s, %s, %s, %s, %s)"
+            # val = (title, content, createdDate, query, image_url, original_link)
+
+            # newspaper 라이브러리에서 언론사 정보 가져오기
+            parsed_url = urlparse(article.source_url)
+            domain_parts = parsed_url.netloc.replace("www.", "").split(".")
+            publisher = (
+                domain_parts[0] if parsed_url.netloc and len(domain_parts) > 1 else ""
+            )
+
+            # SQL query 작성
+            sql = "INSERT INTO pre_news (title, content, createdDate, category, image, link, publisher) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            val = (
+                title,
+                content,
+                createdDate,
+                query,
+                image_url,
+                original_link,
+                publisher,
+            )
 
             try:
                 # SQL query 실행
