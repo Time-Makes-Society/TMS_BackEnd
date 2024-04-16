@@ -4,12 +4,8 @@ import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +19,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/articles")
@@ -100,8 +93,9 @@ public class ArticleController {
 
             // content의 글자 수 계산
             int contentLength = article.getContent().length();
-            // 한국 사람이 평균적으로 1분에 읽는 글자 수
-            int charsPerMinute = 1000; // 1분에 1000자
+
+            // 한국 사람이 평균적으로 1분에 읽는 글자 수(1분에 1000자)
+            int charsPerMinute = 1000;
 
             // content의 글자 수를 평균 읽기 속도로 나누어서 읽는 시간 계산
             int readingTimeInMinutes = (int) Math.ceil((double) contentLength / charsPerMinute);
@@ -110,7 +104,8 @@ public class ArticleController {
             int minutes = readingTimeInMinutes % 60;
             int seconds = (int) ((contentLength % charsPerMinute) * 60.0 / charsPerMinute);
 
-            String articleTime = String.format("약 %d분 %d초", minutes, seconds);
+            // 시간 정보를 LocalTime 객체로 변환
+            LocalTime articleTime = LocalTime.of(minutes, seconds);
             uuidArticle.setArticleTime(articleTime);
 
             // 새로운 엔티티 저장
@@ -120,50 +115,20 @@ public class ArticleController {
 
 
     // UUID이 붙은 Article 데이터를 가져오는 메서드
-//    @GetMapping("/uuid")
-//    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
-//        Pageable pageableWithDefaultSize = PageRequest.of(pageable.getPageNumber(), 10);
-//        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryIn(categories, pageableWithDefaultSize);
-//        return ResponseEntity.ok(uuidArticles);
-//    }
     @GetMapping("/uuid")
     public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
-        Pageable pageableWithDefaultSize = PageRequest.of(pageable.getPageNumber(), 10);
-        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryInOrderByCreatedDateDesc(categories, pageableWithDefaultSize);
+
+        // 유동 페이징으로 최대 갯수 계산
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int maxPageSize = 5; // 최대 5개의 아이템을 허용
+        int adjustedPageSize = Math.min(pageSize, maxPageSize);
+        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
+
+        // 요청된 카테고리에 해당하는 UUIDArticle 가져오기
+        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryInOrderByCreatedDateDesc(categories, pageableWithAdjustedSize);
+
         return ResponseEntity.ok(uuidArticles);
     }
-
-
-
-//    @Transactional
-//    @GetMapping("/uuid")
-//    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") String categories, Pageable pageable) {
-//        List<String> categoryList = Arrays.asList(categories.split(","));
-//        // JPAQueryFactory를 생성
-//        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-//        // 카테고리별로 조건을 만들어서 OR 연산
-//        BooleanExpression categoryExpressions = null;
-//        for (String category : categoryList) {
-//            if (categoryExpressions == null) {
-//                categoryExpressions = uuidArticle.category.eq(category);
-//            } else {
-//                categoryExpressions = categoryExpressions.or(uuidArticle.category.eq(category));
-//            }
-//        }
-//        // 생성된 조건으로 쿼리 실행
-//        List<UUIDArticle> articles = queryFactory.selectFrom(uuidArticle)
-//                .where(categoryExpressions)
-//                .orderBy(uuidArticle.createdDate.desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//        // 카운트 쿼리 실행
-//        long total = queryFactory.selectFrom(uuidArticle)
-//                .where(categoryExpressions)
-//                .fetchCount();
-//        // 페이지 객체 생성 및 반환
-//        Page<UUIDArticle> pageResult = new PageImpl<>(articles, pageable, total);
-//        return ResponseEntity.ok(pageResult);
-//    }
 
 }

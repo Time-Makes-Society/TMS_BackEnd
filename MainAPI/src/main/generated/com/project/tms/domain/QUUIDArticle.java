@@ -19,7 +19,7 @@ public class QUUIDArticle extends EntityPathBase<UUIDArticle> {
 
     public static final QUUIDArticle uUIDArticle = new QUUIDArticle("uUIDArticle");
 
-    public final StringPath articleTime = createString("articleTime");
+    public final TimePath<java.time.LocalTime> articleTime = createTime("articleTime", java.time.LocalTime.class);
 
     public final StringPath category = createString("category");
 
