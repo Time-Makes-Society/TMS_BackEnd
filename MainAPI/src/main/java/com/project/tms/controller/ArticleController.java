@@ -2,6 +2,7 @@ package com.project.tms.controller;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
+import com.project.tms.dto.UUIDArticleDTO;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -115,20 +118,82 @@ public class ArticleController {
 
 
     // UUID이 붙은 Article 데이터를 가져오는 메서드
-    @GetMapping("/uuid")
-    public ResponseEntity<Page<UUIDArticle>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
+    /*@GetMapping("/uuid")
+    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
+        // Page에 보여줄 데이터 리스트를 선언
+        List<Page<UUIDArticleDTO>> result = new ArrayList<>();
 
-        // 유동 페이징으로 최대 갯수 계산
+        // 동적 페이징 설정
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPageNumber();
-        int maxPageSize = 5; // 최대 5개의 아이템을 허용
+        int maxPageSize = 5;
         int adjustedPageSize = Math.min(pageSize, maxPageSize);
         Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
 
-        // 요청된 카테고리에 해당하는 UUIDArticle 가져오기
-        Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryInOrderByCreatedDateDesc(categories, pageableWithAdjustedSize);
+        // for문으로 categoires를 반복
+        for (String category : categories) {
+            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
 
-        return ResponseEntity.ok(uuidArticles);
+            // dto로 보여줄 데이터만 설정
+            Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
+
+                UUIDArticleDTO dto = new UUIDArticleDTO();
+
+                dto.setId(uuidArticle.getId());
+                dto.setTitle(uuidArticle.getTitle());
+                dto.setCreatedDate(uuidArticle.getCreatedDate());
+                dto.setCategory(uuidArticle.getCategory());
+                dto.setImage(uuidArticle.getImage());
+                dto.setArticleTime(uuidArticle.getArticleTime());
+
+                LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9);
+                dto.setCreatedDate(createdDate);
+                return dto;
+            });
+            result.add(dtoPage);
+        }
+
+        return ResponseEntity.ok(result);
+    }*/
+
+    @GetMapping("/uuid")
+    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam("category") String categoryString, Pageable pageable) {
+        // 쉼표로 구분된 카테고리 목록을 파싱
+        String[] categories = categoryString.split(",");
+
+        // 결과를 저장할 리스트
+        List<Page<UUIDArticleDTO>> result = new ArrayList<>();
+
+        // 동적 페이징 설정
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+        int maxPageSize = 5; // 최대 아이템 개수
+        int adjustedPageSize = Math.min(pageSize, maxPageSize);
+        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
+
+        // 각 카테고리별로 데이터 가져오기
+        for (String category : categories) {
+            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
+
+            // 각 페이지에 맞게 DTO로 변환
+            Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
+                UUIDArticleDTO dto = new UUIDArticleDTO();
+                dto.setId(uuidArticle.getId());
+                dto.setTitle(uuidArticle.getTitle());
+                dto.setCreatedDate(uuidArticle.getCreatedDate());
+                dto.setCategory(uuidArticle.getCategory());
+                dto.setImage(uuidArticle.getImage());
+                dto.setArticleTime(uuidArticle.getArticleTime());
+                // 시간대 변환
+                LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+                dto.setCreatedDate(createdDate);
+                return dto;
+            });
+            result.add(dtoPage);
+        }
+
+        return ResponseEntity.ok(result);
     }
+
 
 }
