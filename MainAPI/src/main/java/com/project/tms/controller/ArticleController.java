@@ -1,10 +1,11 @@
 package com.project.tms.controller;
 
+
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.UUIDArticleDTO;
-import com.project.tms.repository.ArticleRepository;
-import com.project.tms.repository.UUIDArticleRepository;
+import com.project.tms.service.ArticleService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,152 +13,48 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Log4j2
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
 
     @Autowired
-    private ArticleRepository articleRepository;
+    private ArticleService articleService;
 
-    @Autowired
-    private UUIDArticleRepository uuidArticleRepository;
 
-    // 플라스크 전처리 서버에 HTTP GET 요청 보내는 메서드
-    private void sendGetRequest(String url) {
-        try {
-            URL apiUrl = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
-            connection.setRequestMethod("GET");
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                // 응답 처리
-                System.out.println("플라스크 서버 응답: " + response.toString());
-            } else {
-                System.out.println("GET 요청 실패: " + responseCode);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // flaks 전처리 서버를 작동시켜 pre_news를 데이터를 UUID가 붙은 news 데이터로 저장하는 메서드
+    // 플라스크 전처리 서버를 작동시켜 pre_news형태의 엔티티를 UUID가 붙은 news 엔티티로 변환해 테이블에 저장하는 메서드
     @GetMapping("/firstAPI/{category}")
     public ResponseEntity<String> refreshAndConvertToUUID(@PathVariable(name = "category") String category) throws UnsupportedEncodingException {
+
         // http://localhost:8081/newssave/category로 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
         String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
-        sendGetRequest(flaksServerUrl);
+        articleService.sendGetRequestToFlask(flaksServerUrl);
 
-        List<Article> articles = articleRepository.findAll();
+        // 모든 pre_news에 있는 데이터를 가져옴
+        List<Article> articles = articleService.preNewsDBFindAll();
 
         // 데이터를 읽어와서 새로운 엔티티를 생성하고 저장
-        processDataAndSaveAsNewEntity(articles);
+        articleService.oldEntityToNewEntity(articles);
 
-        return ResponseEntity.ok("저장이 완료되었습니다.");
+        return ResponseEntity.ok("스프링 서버에 저장이 완료되었습니다.");
     }
 
 
-    // 데이터를 읽어와서 새로운 엔티티를 생성하고 저장하는 메서드
-    private void processDataAndSaveAsNewEntity(List<Article> articles) {
-        for (Article article : articles) {
-            // 기존 Article 엔티티에서 필요한 데이터를 가져와서 UUIDArticle을 생성
-            UUIDArticle uuidArticle = new UUIDArticle();
-            uuidArticle.setTitle(article.getTitle());
-            uuidArticle.setContent(article.getContent());
-            uuidArticle.setCreatedDate(article.getCreatedDate());
-            uuidArticle.setPublisher(article.getPublisher());
-            uuidArticle.setCategory(article.getCategory());
-            uuidArticle.setImage(article.getImage());
-            uuidArticle.setLink(article.getLink());
-
-            // content의 글자 수 계산
-            int contentLength = article.getContent().length();
-
-            // 한국 사람이 평균적으로 1분에 읽는 글자 수(1분에 1000자)
-            int charsPerMinute = 1000;
-
-            // content의 글자 수를 평균 읽기 속도로 나누어서 읽는 시간 계산
-            int readingTimeInMinutes = (int) Math.ceil((double) contentLength / charsPerMinute);
-
-            // 계산된 읽는 시간을 분과 초로 변환하여 저장
-            int minutes = readingTimeInMinutes % 60;
-            int seconds = (int) ((contentLength % charsPerMinute) * 60.0 / charsPerMinute);
-
-            // 시간 정보를 LocalTime 객체로 변환
-            LocalTime articleTime = LocalTime.of(minutes, seconds);
-            uuidArticle.setArticleTime(articleTime);
-
-            // 새로운 엔티티 저장
-            uuidArticleRepository.save(uuidArticle);
-        }
-    }
-
-
-    // UUID이 붙은 Article 데이터를 가져오는 메서드
+    // UUID이 붙은 Article를 카테고리를 설정해서 리스트로 가져오는 메서드
     /*@GetMapping("/uuid")
-    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam("category") List<String> categories, Pageable pageable) {
-        // Page에 보여줄 데이터 리스트를 선언
-        List<Page<UUIDArticleDTO>> result = new ArrayList<>();
-
-        // 동적 페이징 설정
-        int pageSize = pageable.getPageSize();
-        int pageNumber = pageable.getPageNumber();
-        int maxPageSize = 5;
-        int adjustedPageSize = Math.min(pageSize, maxPageSize);
-        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
-
-        // for문으로 categoires를 반복
-        for (String category : categories) {
-            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
-
-            // dto로 보여줄 데이터만 설정
-            Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
-
-                UUIDArticleDTO dto = new UUIDArticleDTO();
-
-                dto.setId(uuidArticle.getId());
-                dto.setTitle(uuidArticle.getTitle());
-                dto.setCreatedDate(uuidArticle.getCreatedDate());
-                dto.setCategory(uuidArticle.getCategory());
-                dto.setImage(uuidArticle.getImage());
-                dto.setArticleTime(uuidArticle.getArticleTime());
-
-                LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9);
-                dto.setCreatedDate(createdDate);
-                return dto;
-            });
-            result.add(dtoPage);
+    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString, @RequestParam(value = "page", defaultValue = "0") int page, Pageable pageable) {
+        // 쿼리스트링이 비어있는 경우 기본값 설정
+        if (categoryString == null || categoryString.isEmpty()) {
+            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
         }
 
-        return ResponseEntity.ok(result);
-    }*/
-
-    @GetMapping("/uuid")
-    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam("category") String categoryString, Pageable pageable) {
         // 쉼표로 구분된 카테고리 목록을 파싱
         String[] categories = categoryString.split(",");
 
@@ -166,16 +63,14 @@ public class ArticleController {
 
         // 동적 페이징 설정
         int pageSize = pageable.getPageSize();
-        int pageNumber = pageable.getPageNumber();
+        int pageNumber = page;
         int maxPageSize = 5; // 최대 아이템 개수
         int adjustedPageSize = Math.min(pageSize, maxPageSize);
         Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
 
-        // 각 카테고리별로 데이터 가져오기
-        for (String category : categories) {
-            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
-
-            // 각 페이지에 맞게 DTO로 변환
+        // 카테고리가 비어있는 경우 모든 카테고리의 데이터를 조회
+        if (categoryString.isEmpty()) {
+            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findAll(pageableWithAdjustedSize);
             Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
                 UUIDArticleDTO dto = new UUIDArticleDTO();
                 dto.setId(uuidArticle.getId());
@@ -190,6 +85,96 @@ public class ArticleController {
                 return dto;
             });
             result.add(dtoPage);
+        } else {
+            // 각 카테고리별로 데이터 가져오기
+            for (String category : categories) {
+                Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
+
+                // 각 페이지에 맞게 DTO로 변환
+                Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
+                    UUIDArticleDTO dto = new UUIDArticleDTO();
+                    dto.setId(uuidArticle.getId());
+                    dto.setTitle(uuidArticle.getTitle());
+                    dto.setCreatedDate(uuidArticle.getCreatedDate());
+                    dto.setCategory(uuidArticle.getCategory());
+                    dto.setImage(uuidArticle.getImage());
+                    dto.setArticleTime(uuidArticle.getArticleTime());
+                    // 시간대 변환
+                    LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+                    dto.setCreatedDate(createdDate);
+                    return dto;
+                });
+                result.add(dtoPage);
+            }
+        }
+
+        return ResponseEntity.ok(result);
+    }*/
+
+    @GetMapping("/uuid")
+    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
+                                                                                  @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                                  @RequestParam(value = "target", required = false) String targetTime,
+                                                                                  Pageable pageable) {
+        // 쿼리스트링이 비어있는 경우 기본값 설정
+        if (categoryString == null || categoryString.isEmpty()) {
+            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
+        }
+
+        // 쉼표로 구분된 카테고리 목록을 파싱
+        String[] categories = categoryString.split(",");
+
+        // 페이징 결과를 저장할 리스트
+        List<Page<UUIDArticleDTO>> result = new ArrayList<>();
+
+        // 동적 페이징 설정
+        int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
+        int pageNumber = page; // page 쿼리 스트링
+        int maxPageSize = 5; // 최대 아이템 개수
+        int adjustedPageSize = Math.min(pageSize, maxPageSize); // 둘 중 더 작은 page의 수를 적용
+
+        // 페이징 번호, 한 페이지의 갯수, pageable 객체의 정렬을 이용해 pageable 객체 생성
+        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
+
+        // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
+        if (categoryString.isEmpty()) {
+
+            // 가공한 모든 데이터를 받아옴
+            Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
+
+            // 각 페이지에 맞게 DTO로 변환
+            Page<UUIDArticleDTO> dtoPage = articleService.entityToPageDTO(uuidArticles);
+
+
+            // 페이징 결과 리스트에 데이터를 추가
+            result.add(dtoPage);
+
+        } else {  // 각 category별로 데이터 가져오기
+
+            // 리스트 스플릿으로 자른 것을 category 변수로 순회
+            for (String category : categories) {
+                // 최신순으로 category 변수를 순회
+                Page<UUIDArticle> uuidArticles = articleService.manyCategoryfindAll(category, pageableWithAdjustedSize);
+
+                // 각 페이지에 맞게 DTO로 변환
+                Page<UUIDArticleDTO> dtoPage = articleService.entityToPageDTO(uuidArticles);
+
+                // mm:ss 형식의 target 쿼리스트링이 주어진 경우
+                log.info("target: {}", targetTime);
+
+                /*if (targetTime != null && !targetTime.isEmpty()) {
+                    LocalTime target = LocalTime.parse(targetTime); // String을 LocalTime으로 파싱
+
+                    // 시간대가 가장 근접한 기사들을 저장하는 리스트
+                    List<UUIDArticleDTO> closestArticles = new ArrayList<>();
+
+
+                    // 가장 가까운 시간의 기사들만 반환
+                    dtoPage = new PageImpl<>(closestArticles, pageableWithAdjustedSize, closestArticles.size());
+                }*/
+
+                result.add(dtoPage);
+            }
         }
 
         return ResponseEntity.ok(result);
