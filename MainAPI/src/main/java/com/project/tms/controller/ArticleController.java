@@ -8,6 +8,7 @@ import com.project.tms.service.ArticleService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -48,69 +49,6 @@ public class ArticleController {
 
 
     // UUID이 붙은 Article를 카테고리를 설정해서 리스트로 가져오는 메서드
-    /*@GetMapping("/uuid")
-    public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString, @RequestParam(value = "page", defaultValue = "0") int page, Pageable pageable) {
-        // 쿼리스트링이 비어있는 경우 기본값 설정
-        if (categoryString == null || categoryString.isEmpty()) {
-            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
-        }
-
-        // 쉼표로 구분된 카테고리 목록을 파싱
-        String[] categories = categoryString.split(",");
-
-        // 결과를 저장할 리스트
-        List<Page<UUIDArticleDTO>> result = new ArrayList<>();
-
-        // 동적 페이징 설정
-        int pageSize = pageable.getPageSize();
-        int pageNumber = page;
-        int maxPageSize = 5; // 최대 아이템 개수
-        int adjustedPageSize = Math.min(pageSize, maxPageSize);
-        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
-
-        // 카테고리가 비어있는 경우 모든 카테고리의 데이터를 조회
-        if (categoryString.isEmpty()) {
-            Page<UUIDArticle> uuidArticles = uuidArticleRepository.findAll(pageableWithAdjustedSize);
-            Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
-                UUIDArticleDTO dto = new UUIDArticleDTO();
-                dto.setId(uuidArticle.getId());
-                dto.setTitle(uuidArticle.getTitle());
-                dto.setCreatedDate(uuidArticle.getCreatedDate());
-                dto.setCategory(uuidArticle.getCategory());
-                dto.setImage(uuidArticle.getImage());
-                dto.setArticleTime(uuidArticle.getArticleTime());
-                // 시간대 변환
-                LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
-                dto.setCreatedDate(createdDate);
-                return dto;
-            });
-            result.add(dtoPage);
-        } else {
-            // 각 카테고리별로 데이터 가져오기
-            for (String category : categories) {
-                Page<UUIDArticle> uuidArticles = uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageableWithAdjustedSize);
-
-                // 각 페이지에 맞게 DTO로 변환
-                Page<UUIDArticleDTO> dtoPage = uuidArticles.map(uuidArticle -> {
-                    UUIDArticleDTO dto = new UUIDArticleDTO();
-                    dto.setId(uuidArticle.getId());
-                    dto.setTitle(uuidArticle.getTitle());
-                    dto.setCreatedDate(uuidArticle.getCreatedDate());
-                    dto.setCategory(uuidArticle.getCategory());
-                    dto.setImage(uuidArticle.getImage());
-                    dto.setArticleTime(uuidArticle.getArticleTime());
-                    // 시간대 변환
-                    LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
-                    dto.setCreatedDate(createdDate);
-                    return dto;
-                });
-                result.add(dtoPage);
-            }
-        }
-
-        return ResponseEntity.ok(result);
-    }*/
-
     @GetMapping("/uuid")
     public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
                                                                                   @RequestParam(value = "page", defaultValue = "0") int page,
@@ -138,13 +76,11 @@ public class ArticleController {
 
         // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
         if (categoryString.isEmpty()) {
-
             // 가공한 모든 데이터를 받아옴
             Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
 
             // 각 페이지에 맞게 DTO로 변환
             Page<UUIDArticleDTO> dtoPage = articleService.entityToPageDTO(uuidArticles);
-
 
             // 페이징 결과 리스트에 데이터를 추가
             result.add(dtoPage);
@@ -162,18 +98,18 @@ public class ArticleController {
                 // mm:ss 형식의 target 쿼리스트링이 주어진 경우
                 log.info("target: {}", targetTime);
 
-                /*if (targetTime != null && !targetTime.isEmpty()) {
-                    LocalTime target = LocalTime.parse(targetTime); // String을 LocalTime으로 파싱
+                if (targetTime != null && !targetTime.isEmpty()) {
+                    // 시간대가 가장 근접한 기사들을 가져오는 메서드 호출
+                    List<UUIDArticleDTO> closestArticles = articleService.findClosestToTargetTimeByCategory(category, targetTime, adjustedPageSize, pageNumber);
 
-                    // 시간대가 가장 근접한 기사들을 저장하는 리스트
-                    List<UUIDArticleDTO> closestArticles = new ArrayList<>();
-
-
-                    // 가장 가까운 시간의 기사들만 반환
-                    dtoPage = new PageImpl<>(closestArticles, pageableWithAdjustedSize, closestArticles.size());
-                }*/
-
-                result.add(dtoPage);
+                    // 가장 근접한 기사들의 페이지 생성
+                    Page<UUIDArticleDTO> closestPage = new PageImpl<>(closestArticles, pageableWithAdjustedSize, closestArticles.size());
+                    // 페이징 결과 리스트에 데이터를 추가
+                    result.add(closestPage);
+                } else {
+                    // 타겟 시간이 없는 경우 기존의 결과를 그대로 사용
+                    result.add(dtoPage);
+                }
             }
         }
 

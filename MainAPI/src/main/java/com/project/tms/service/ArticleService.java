@@ -16,9 +16,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +68,16 @@ public class ArticleService {
     // 데이터를 읽어와서 새로운 엔티티를 생성하고 저장하는 메서드
     public void oldEntityToNewEntity(List<Article> articles) {
         for (Article article : articles) {
+
+            // 기존 Article 엔티티에서 필요한 데이터를 가져와서 UUIDArticle을 생성
+            List<UUIDArticle> existingArticle = uuidArticleRepository.findByTitle(article.getTitle());
+
+            // 이미 저장된 기사인지 확인
+            if (!existingArticle.isEmpty()) {
+                // 이미 저장된 기사인 경우 다음 기사로 넘어감
+                continue;
+            }
+
             // 기존 Article 엔티티에서 필요한 데이터를 가져와서 UUIDArticle을 생성
             UUIDArticle uuidArticle = new UUIDArticle();
             uuidArticle.setTitle(article.getTitle());
@@ -124,5 +137,75 @@ public class ArticleService {
             e.printStackTrace();
         }
     }
+
+    // UUIDArticle 엔티티를 UUIDArticleDTO로 변환하는 메서드
+    private UUIDArticleDTO entityToDTO(UUIDArticle uuidArticle) {
+        UUIDArticleDTO dto = new UUIDArticleDTO();
+        dto.setId(uuidArticle.getId());
+        dto.setTitle(uuidArticle.getTitle());
+        dto.setCategory(uuidArticle.getCategory());
+        dto.setImage(uuidArticle.getImage());
+        dto.setArticleTime(uuidArticle.getArticleTime());
+
+        // 시간대 변환
+        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+        dto.setCreatedDate(createdDate);
+        return dto;
+    }
+
+    // dfs 알고리즘으로 기사들의 시간을 조합하여 가장 근접한 시간을 찾는 메서드
+    public List<UUIDArticleDTO> findClosestToTargetTimeByCategory(String category, String targetTime, int pageSize, int pageNumber) {
+        // String 형식의 시간을 LocalTime으로 변환
+        LocalTime target = LocalTime.parse(targetTime);
+
+        // 카테고리 별로 기사들을 가져오는 메서드 호출
+        List<UUIDArticle> articles = uuidArticleRepository.findByCategory(category);
+
+        // 가장 가까운 기사들을 저장할 리스트
+        List<UUIDArticle> closestArticles = new ArrayList<>();
+
+        // 선택된 기사들을 저장할 리스트
+        List<UUIDArticle> selectedArticles = new ArrayList<>();
+
+        // 가장 가까운 기사들의 조합을 찾기 위한 재귀 호출
+        findClosestArticles(articles, target, 0, LocalTime.of(0, 0), selectedArticles, closestArticles);
+
+        // 페이지에 맞게 결과를 자름
+        int startIndex = pageNumber * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, closestArticles.size());
+
+        // DTO로 변환하여 반환
+        return closestArticles.subList(startIndex, endIndex)
+                .stream()
+                .map(this::entityToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    // taget 쿼리스트링 시간에 가장 가까운 기사들의 조합을 찾아 주는 재귀 메서드
+    private void findClosestArticles(List<UUIDArticle> articles, LocalTime target, int index, LocalTime currentSum, List<UUIDArticle> selectedArticles, List<UUIDArticle> closestArticles) {
+        if (index == articles.size()) {
+            // 현재까지의 합의 시간과 목표 시간과의 차이를 계산합니다.
+            long currentDifference = Math.abs(Duration.between(currentSum, target).getSeconds());
+            // 현재까지 선택된 기사 리스트가 비어있거나 가장 가까운 시간과의 차이가 더 작은 경우 기사 리스트를 갱신합니다.
+            if (closestArticles.isEmpty() || currentDifference < closestArticles.stream().mapToLong(article -> Math.abs(Duration.between(article.getArticleTime(), target).getSeconds())).min().orElse(Long.MAX_VALUE)) {
+                closestArticles.clear();
+                closestArticles.addAll(selectedArticles);
+            }
+            return;
+        }
+
+        // 현재 기사를 선택하지 않는 경우
+        findClosestArticles(articles, target, index + 1, currentSum, selectedArticles, closestArticles);
+
+        // 현재 기사를 선택하는 경우
+        UUIDArticle currentArticle = articles.get(index);
+        selectedArticles.add(currentArticle);
+
+        // Duration을 사용하여 시간을 더함
+        findClosestArticles(articles, target, index + 1, currentSum.plus(Duration.between(LocalTime.MIN, currentArticle.getArticleTime())), selectedArticles, closestArticles);
+        selectedArticles.remove(currentArticle); // 선택한 기사를 다시 제거하여 백트래킹합니다.
+    }
+
 }
 

@@ -20,25 +20,10 @@ public interface UUIDArticleRepository extends JpaRepository<UUIDArticle, UUID> 
     @Query("SELECT a FROM UUIDArticle a WHERE a.category = :category ORDER BY a.createdDate DESC")
     Page<UUIDArticle> findByCategoryOrderByCreatedDateDesc(@Param("category") String category, Pageable pageable);
 
+
+    // 해당 카테고리의 모든 기사를 검색하는 메서드
     @Query("SELECT a FROM UUIDArticle a WHERE a.category = :category")
     List<UUIDArticle> findByCategory(@Param("category") String category);
 
-    default List<UUIDArticle> findClosestToTargetTimeByCategory(String category, LocalTime target, int pageSize, int pageNumber) {
-        List<UUIDArticle> articles = findByCategory(category);
-
-        // 결과를 저장할 리스트
-        List<UUIDArticle> closestArticles = new ArrayList<>();
-
-        // 가장 target 시간과 유사한 기사들을 선택합니다.
-        for (UUIDArticle article : articles) {
-            if (Duration.between(article.getArticleTime(), target).abs().getSeconds() <= 300) {
-                closestArticles.add(article);
-            }
-        }
-
-        // 리스트를 페이지별로 잘라서 결과를 반환합니다.
-        int startIndex = pageNumber * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, closestArticles.size());
-        return closestArticles.subList(startIndex, endIndex);
-    }
+    List<UUIDArticle> findByTitle(String title);
 }
