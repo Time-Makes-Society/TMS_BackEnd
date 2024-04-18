@@ -26,4 +26,27 @@ public class Scrap {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "uuid_id")
     private UUIDArticle uuidArticle;
+
+    private String title;
+    @Lob
+    @Column(columnDefinition = "text")
+    private String content;
+    private String createdDate;
+    private String category;
+    private String image;
+    private String link;
+
+    private Scrap() {
+    }
+
+    public Scrap(Member member, UUIDArticle uuidArticle) {
+        this.member = member;
+        this.uuidArticle = uuidArticle;
+        this.title = uuidArticle.getTitle();
+        this.content = uuidArticle.getContent();
+        this.createdDate = uuidArticle.getCreatedDate();
+        this.category = uuidArticle.getCategory();
+        this.image = uuidArticle.getImage();
+        this.link = uuidArticle.getLink();
+    }
 }
