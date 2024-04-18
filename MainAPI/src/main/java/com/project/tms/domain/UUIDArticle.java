@@ -26,10 +26,11 @@ public class UUIDArticle {
     @Lob
     @Column(columnDefinition = "text")
     private String content;
-    private LocalDateTime createdDate;
-    private String publisher;
+
     private String category;
     private String image;
     private String link;
+    private String publisher;
     private LocalTime articleTime;
+    private LocalDateTime createdDate;
 }
