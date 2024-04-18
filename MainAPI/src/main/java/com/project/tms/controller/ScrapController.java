@@ -17,12 +17,12 @@ public class ScrapController {
     private final ScrapService scrapService;
 
 
-        @PostMapping("/scrap")
-        public ResponseEntity<String> scrapArticle(@RequestParam Long memberId, @RequestParam UUID articleId) {
-            log.info("스크랩 실행");
-            scrapService.scrapArticle(memberId, articleId);
-            return ResponseEntity.ok("스크랩 성공");
-        }
+    @PostMapping("/scrap")
+    public ResponseEntity<String> scrapArticle(@RequestParam Long memberId, @RequestParam UUID articleId) {
+        log.info("스크랩 실행");
+        scrapService.scrapArticle(memberId, articleId);
+        return ResponseEntity.ok("스크랩 성공");
+    }
 
 
     @PostMapping("/scrap/cancel")

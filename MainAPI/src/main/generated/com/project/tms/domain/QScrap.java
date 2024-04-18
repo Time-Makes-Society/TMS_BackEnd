@@ -22,9 +22,23 @@ public class QScrap extends EntityPathBase<Scrap> {
 
     public static final QScrap scrap = new QScrap("scrap");
 
+    public final TimePath<java.time.LocalTime> articleTime = createTime("articleTime", java.time.LocalTime.class);
+
+    public final StringPath category = createString("category");
+
+    public final StringPath content = createString("content");
+
+    public final DateTimePath<java.time.LocalDateTime> createdDate = createDateTime("createdDate", java.time.LocalDateTime.class);
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final StringPath image = createString("image");
+
+    public final StringPath link = createString("link");
+
     public final QMember member;
+
+    public final StringPath title = createString("title");
 
     public final QUUIDArticle uuidArticle;
 

@@ -1,22 +1,29 @@
 package com.project.tms.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.*;
 
 @Entity
 @Table
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Scrap {
 
 //    @EmbeddedId
 //    private ScrapId id;
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
 
     @ManyToOne(fetch = LAZY)
@@ -31,13 +38,13 @@ public class Scrap {
     @Lob
     @Column(columnDefinition = "text")
     private String content;
-    private String createdDate;
+    private LocalDateTime createdDate;
     private String category;
     private String image;
     private String link;
+    private LocalTime articleTime;
 
-    private Scrap() {
-    }
+
 
     public Scrap(Member member, UUIDArticle uuidArticle) {
         this.member = member;
@@ -48,5 +55,6 @@ public class Scrap {
         this.category = uuidArticle.getCategory();
         this.image = uuidArticle.getImage();
         this.link = uuidArticle.getLink();
+        this.articleTime = uuidArticle.getArticleTime();
     }
 }
