@@ -1,5 +1,6 @@
 package com.project.tms.dto;
 
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +14,6 @@ public class UUIDArticleListDto {
 
     private UUID id;
     private String title;
-    private String content;
     private String category;
     private String image;
     private String publisher;

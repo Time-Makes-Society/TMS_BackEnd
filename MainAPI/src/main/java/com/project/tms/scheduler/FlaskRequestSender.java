@@ -15,7 +15,7 @@ public class FlaskRequestSender {
     }
 
     public void sendRequest(String category) throws UnsupportedEncodingException {
-        String url = baseUrl + "/api/articles/firstAPI/" + category;
+        String url = baseUrl + "/api/firstAPI/" + category;
         restTemplate.getForObject(url, String.class);
     }
 }

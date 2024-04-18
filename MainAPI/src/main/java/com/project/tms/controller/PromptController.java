@@ -4,18 +4,16 @@ package com.project.tms.controller;
 import com.project.tms.client.GptClient;
 import com.project.tms.dto.gpt.ChatRequest;
 import com.project.tms.dto.gpt.ChatResponse;
-import com.project.tms.dto.gpt.Message;
+import com.project.tms.service.PromptEngineeringService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -23,26 +21,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PromptController {
 
+    @Autowired
+    private final PromptEngineeringService promptEngineeringService;
+
     private final GptClient gpt;
 
-    @PostMapping("/chat")
-    public ResponseEntity<ChatResponse> chat(@RequestBody String prompt) {
+    @GetMapping("/summarize/{uuid}")
+    public ResponseEntity<ChatResponse> chat(@PathVariable(name = "uuid") UUID uuid) {
         try {
-            // ChatRequest 객체 생성
-            ChatRequest request = new ChatRequest();
-            request.setModel("gpt-3.5-turbo");
+            // uuid에 맞는 기사를 검색해서 내용만 추출함
+            String articleContent = promptEngineeringService.articleFindOneToConvertContent(uuid);
 
-            // 사용자의 입력 메시지를 ChatRequest에 추가
-            List<Message> messages = new ArrayList<>();
-            messages.add(new Message("user", prompt));
-            request.setMessages(messages);
-
-            // 기타 옵션들을 설정 (필요시)
-            /*request.setTemperature(1);
-            request.setMax_tokens(256);
-            request.setTop_p(1);
-            request.setFrequency_penalty(0);
-            request.setPresence_penalty(0);*/
+            // 내용을 요약해 주는 프롬프트 엔지니어링을 거침
+            ChatRequest request = promptEngineeringService.startEngineerPrompt(articleContent);
 
             // GptClient를 통해 chat 요청을 보내고 응답을 받음
             ChatResponse response = gpt.chat(request);
