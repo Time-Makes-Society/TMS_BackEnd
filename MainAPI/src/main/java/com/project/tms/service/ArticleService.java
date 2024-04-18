@@ -2,8 +2,8 @@ package com.project.tms.service;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.UUIDArticleDetailDTO;
-import com.project.tms.dto.UUIDArticleListDTO;
+import com.project.tms.dto.UUIDArticleDetailDto;
+import com.project.tms.dto.UUIDArticleListDto;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -52,15 +52,15 @@ public class ArticleService {
     }
 
 
-    public UUIDArticleDetailDTO articleFindOne(UUID uuid) {
+    public UUIDArticleDetailDto articleFindOne(UUID uuid) {
         UUIDArticle uuidArticle = uuidArticleRepository.findById(uuid)
                 .orElseThrow(() -> new EntityNotFoundException("UUIDArticle not found with id: " + uuid));
 
         return entityToDetailDTO(uuidArticle);
     }
 
-    private UUIDArticleDetailDTO entityToDetailDTO(UUIDArticle uuidArticle) {
-        UUIDArticleDetailDTO articleDetailDTO = new UUIDArticleDetailDTO();
+    private UUIDArticleDetailDto entityToDetailDTO(UUIDArticle uuidArticle) {
+        UUIDArticleDetailDto articleDetailDTO = new UUIDArticleDetailDto();
 
         articleDetailDTO.setTitle(uuidArticle.getTitle());
         articleDetailDTO.setContent(uuidArticle.getContent());
@@ -78,9 +78,9 @@ public class ArticleService {
 
 
     // 가공한 news 테이블 데이터를 PageDTO 형식으로 재가공하는 메서드
-    public Page<UUIDArticleListDTO> entityToPageDTO(Page<UUIDArticle> articlePage) {
+    public Page<UUIDArticleListDto> entityToPageDTO(Page<UUIDArticle> articlePage) {
         return articlePage.map(uuidArticle -> {
-            UUIDArticleListDTO dto = new UUIDArticleListDTO();
+            UUIDArticleListDto dto = new UUIDArticleListDto();
             dto.setId(uuidArticle.getId());
             dto.setTitle(uuidArticle.getTitle());
             dto.setCategory(uuidArticle.getCategory());
@@ -169,8 +169,8 @@ public class ArticleService {
     }
 
     // UUIDArticle 엔티티를 UUIDArticleDTO로 변환하는 메서드
-    private UUIDArticleListDTO entityToDTO(UUIDArticle uuidArticle) {
-        UUIDArticleListDTO dto = new UUIDArticleListDTO();
+    private UUIDArticleListDto entityToDTO(UUIDArticle uuidArticle) {
+        UUIDArticleListDto dto = new UUIDArticleListDto();
         dto.setId(uuidArticle.getId());
         dto.setTitle(uuidArticle.getTitle());
         dto.setCategory(uuidArticle.getCategory());
@@ -185,7 +185,7 @@ public class ArticleService {
 
 
     // 쿼리를 사용하여 target 시간에 가장 가까운 기사들을 가져오는 메서드
-    public List<UUIDArticleListDTO> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize) {
+    public List<UUIDArticleListDto> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize) {
         List<UUIDArticle> closestArticles = new ArrayList<>();
 
         // 쿼리를 사용하여 각 카테고리에서 target 시간 이전의 기사들을 가져옴

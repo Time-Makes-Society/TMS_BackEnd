@@ -17,8 +17,6 @@ configurations {
     }
 }
 
-//compileJava { options.compilerArgs << '-parameters' }
-
 
 repositories {
     mavenCentral()
@@ -41,6 +39,12 @@ dependencies {
 
     //GSON 추가
     implementation 'com.google.code.gson:gson:2.8.6'
+
+    // GPT 설정을 위한 webflux 추가
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64'
+
 }
 
 tasks.named('test') {

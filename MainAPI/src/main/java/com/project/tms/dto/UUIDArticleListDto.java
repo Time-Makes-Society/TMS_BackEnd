@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class UUIDArticleListDTO {
+public class UUIDArticleListDto {
 
     private UUID id;
     private String title;

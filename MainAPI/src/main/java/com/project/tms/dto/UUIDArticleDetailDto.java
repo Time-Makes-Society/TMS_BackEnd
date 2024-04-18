@@ -9,7 +9,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-public class UUIDArticleDetailDTO {
+public class UUIDArticleDetailDto {
     private String title;
     private String content;
     private String category;

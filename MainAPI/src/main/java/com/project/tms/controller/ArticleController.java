@@ -3,8 +3,8 @@ package com.project.tms.controller;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.UUIDArticleDetailDTO;
-import com.project.tms.dto.UUIDArticleListDTO;
+import com.project.tms.dto.UUIDArticleDetailDto;
+import com.project.tms.dto.UUIDArticleListDto;
 import com.project.tms.service.ArticleService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class ArticleController {
 
 
     @GetMapping("/articles")
-    public ResponseEntity<List<Page<UUIDArticleListDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
+    public ResponseEntity<List<Page<UUIDArticleListDto>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
                                                                                       @RequestParam(value = "page", defaultValue = "0") int page,
                                                                                       Pageable pageable) {
         // 쿼리스트링이 비어있는 경우 기본값 설정
@@ -63,7 +63,7 @@ public class ArticleController {
         String[] categories = categoryString.split(",");
 
         // 페이징 결과를 저장할 리스트
-        List<Page<UUIDArticleListDTO>> result = new ArrayList<>();
+        List<Page<UUIDArticleListDto>> result = new ArrayList<>();
 
         // 동적 페이징 설정
         int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
@@ -81,7 +81,7 @@ public class ArticleController {
             Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
 
             // 각 페이지에 맞게 DTO로 변환
-            Page<UUIDArticleListDTO> dtoPage = articleService.entityToPageDTO(uuidArticles);
+            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
 
 
             // 페이징 결과 리스트에 데이터를 추가
@@ -94,7 +94,7 @@ public class ArticleController {
                 Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, pageableWithAdjustedSize);
 
                 // 각 페이지에 맞게 DTO로 변환
-                Page<UUIDArticleListDTO> dtoPage = articleService.entityToPageDTO(uuidArticles);
+                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
 
                 result.add(dtoPage);
             }
@@ -103,7 +103,7 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/recommend")
-    public ResponseEntity<List<UUIDArticleListDTO>> getUUIDArticlesByCategoriesResultTarget(
+    public ResponseEntity<List<UUIDArticleListDto>> getUUIDArticlesByCategoriesResultTarget(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "target", required = true) String target,
             Pageable pageable) {
@@ -127,14 +127,14 @@ public class ArticleController {
         int adjustedPageSize = pageable.getPageSize();
 
         // 지정된 카테고리 및 대상 시간을 기반으로 가장 가까운 기사를 찾는 메서드를 호출
-        List<UUIDArticleListDTO> closestArticles = articleService.findClosestToTargetTimeByCategories(categories, targetTime, adjustedPageSize);
+        List<UUIDArticleListDto> closestArticles = articleService.findClosestToTargetTimeByCategories(categories, targetTime, adjustedPageSize);
 
         return ResponseEntity.ok(closestArticles);
     }
 
     @GetMapping("/articles/{uuid}")
-    public ResponseEntity<UUIDArticleDetailDTO> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
-        UUIDArticleDetailDTO uuidArticleDetailDTO = articleService.articleFindOne(uuid);
+    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
+        UUIDArticleDetailDto uuidArticleDetailDTO = articleService.articleFindOne(uuid);
 
         return ResponseEntity.ok().body(uuidArticleDetailDTO);
     }
