@@ -1,19 +1,14 @@
 package com.project.tms.controller;
 
 import com.project.tms.domain.Member;
-import com.project.tms.domain.tag.Tag;
 import com.project.tms.dto.MemberDto;
-import com.project.tms.repository.MemberRepository;
 import com.project.tms.repository.TagRepository;
 import com.project.tms.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
