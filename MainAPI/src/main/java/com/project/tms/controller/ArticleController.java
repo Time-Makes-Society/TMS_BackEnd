@@ -23,7 +23,7 @@ import java.util.List;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/articles")
+@RequestMapping("/api")
 public class ArticleController {
 
     @Autowired
@@ -139,7 +139,7 @@ public class ArticleController {
     }*/
 
 
-    @GetMapping("/recommend")
+    @GetMapping("/articles/recommend")
     public ResponseEntity<List<UUIDArticleDTO>> getUUIDArticlesByCategories(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -171,7 +171,7 @@ public class ArticleController {
     }
 
 
-    @GetMapping("/uuid")
+    @GetMapping("/articles")
     public ResponseEntity<List<Page<UUIDArticleDTO>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
                                                                                   @RequestParam(value = "page", defaultValue = "0") int page,
                                                                                   Pageable pageable) {

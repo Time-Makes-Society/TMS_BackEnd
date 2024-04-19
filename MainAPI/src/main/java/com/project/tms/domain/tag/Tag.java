@@ -23,8 +23,8 @@ public abstract class Tag {
     @Column(name = "tag_id")
     private Long id;
 
-    private String name;
 
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL)
     private List<MemberTag> category = new ArrayList<>();
+
 }

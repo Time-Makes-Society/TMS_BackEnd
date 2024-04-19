@@ -40,23 +40,39 @@ public class MemberController {
     /**
      * 태그 선택
      */
+//    @PostMapping("/{memberId}/tag")
+//    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<Long> tagIds) {
+//        Member member = memberService.findById(memberId).orElse(null);
+//        if (member == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        List<Tag> selectedTags = new ArrayList<>();
+//        for (Long tagId : tagIds) {
+//            Tag tag = tagRepository.findById(tagId).orElse(null);
+//            if (tag != null) {
+//                selectedTags.add(tag);
+//            }
+//        }
+//
+//        memberService.selectTags(member, selectedTags);
+//
+//
+//        return ResponseEntity.ok("Tags selected successfully");
+//    }
+
+    /**
+     * 파라미터 → String List
+     * ex) ["ECONOMY", "ENTERTAIN", "WORLD" ]
+     */
     @PostMapping("/{memberId}/tag")
-    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<Long> tagIds) {
+    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
         Member member = memberService.findById(memberId).orElse(null);
         if (member == null) {
             return ResponseEntity.notFound().build();
         }
 
-        List<Tag> selectedTags = new ArrayList<>();
-        for (Long tagId : tagIds) {
-            Tag tag = tagRepository.findById(tagId).orElse(null);
-            if (tag != null) {
-                selectedTags.add(tag);
-            }
-        }
-
-        memberService.selectTags(member, selectedTags);
-
+        memberService.selectTags(member, tagNames);
 
         return ResponseEntity.ok("Tags selected successfully");
     }
