@@ -34,7 +34,8 @@ public class TimerController {
         System.out.println("사용자가 설정한 시간: " + userSetTime + "초");
 
         executorService.schedule(() -> {
-            sendTimerExpiredRequest();
+//            sendTimerExpiredRequest(); // 단순 "타이머 만료" 메시지
+            sendTimerExpiredRequestLogout(); // 타이머 종료 → 사용자 로그아웃
         }, userSetTime, TimeUnit.SECONDS);
 
         // 응답 보내기
@@ -46,6 +47,11 @@ public class TimerController {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/api/timerExpired", String.class);
         System.out.println("타이머 만료 요청 응답: " + response.getBody());
+    }
+    private void sendTimerExpiredRequestLogout() {
+
+        log.info("타이머 만료");
+        logoutUser();
     }
 
 //    @GetMapping("/timerExpired")
@@ -59,5 +65,15 @@ public class TimerController {
         log.info("타이머 종료");
         String message = "타이머 종료";
         return ResponseEntity.ok(message);
+    }
+
+    private void logoutUser() {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8080/api/logout", null, String.class);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            log.info("사용자 로그아웃 성공");
+        } else {
+            log.error("사용자 로그아웃 실패");
+        }
     }
 }
