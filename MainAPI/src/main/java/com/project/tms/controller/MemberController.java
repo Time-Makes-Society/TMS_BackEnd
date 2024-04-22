@@ -1,6 +1,7 @@
 package com.project.tms.controller;
 
 import com.project.tms.domain.Member;
+import com.project.tms.domain.MemberTag;
 import com.project.tms.dto.MemberDto;
 import com.project.tms.repository.TagRepository;
 import com.project.tms.service.MemberService;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -71,4 +73,49 @@ public class MemberController {
 
         return ResponseEntity.ok("Tags selected successfully");
     }
+
+    @GetMapping("/{memberId}/tags")
+    public ResponseEntity<List<String>> getMemberTags(@PathVariable Long memberId) {
+        Member member = memberService.findById(memberId).orElse(null);
+        if (member == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<String> tagNames = new ArrayList<>();
+        for (MemberTag memberTag : member.getTagList()) {
+            Long tagId = memberTag.getTag().getId();
+            String tagName = TagIdToName(tagId);
+            tagNames.add(tagName);
+        }
+
+        return ResponseEntity.ok(tagNames);
+    }
+
+    private String TagIdToName(Long tagId) {
+
+        switch (tagId.intValue()) {
+            case 1:
+                return "CULTURE";
+            case 2:
+                return "ECONOMY";
+            case 3:
+                return "ENTERTAIN";
+            case 4:
+                return "POLITICS";
+            case 5:
+                return "SCIENCE";
+            case 6:
+                return "SOCIETY";
+            case 7:
+                return "SPORTS";
+            case 8:
+                return "TECHNOLOGY";
+            case 9:
+                return "WORLD";
+            default:
+                return null;
+        }
+    }
+
+
 }

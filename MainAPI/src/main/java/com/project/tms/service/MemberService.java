@@ -86,8 +86,6 @@ public class MemberService {
     }
 
     private Long findTagIdByName(String tagName) {
-        // 실제로는 태그 이름을 사용하여 ID를 찾는 방법을 구현해야 합니다.
-        // 여기에서는 가정으로 작성된 코드입니다.
         switch (tagName) {
             case "CULTURE":
                 return 1L;
