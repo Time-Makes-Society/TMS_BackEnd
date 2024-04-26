@@ -13,7 +13,8 @@ import java.io.IOException;
 @Slf4j
 public class LoginCheckFilter implements Filter {
 
-    private static final String[] whiteList = {"/api/login", "/api/logout", "/api/members/signup", "/api/firstAPI/*"};
+    private static final String[] whiteList = {"/api/login", "/api/logout", "/api/members/signup", "/api/firstAPI/*", "/api/timerExpired"};
+
 
 
     @Override

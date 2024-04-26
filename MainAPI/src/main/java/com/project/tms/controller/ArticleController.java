@@ -103,6 +103,7 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/recommend")
+
     public ResponseEntity<List<UUIDArticleListDto>> getUUIDArticlesByCategoriesResultTarget(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "target", required = true) String target,
@@ -135,6 +136,7 @@ public class ArticleController {
     @GetMapping("/articles/{uuid}")
     public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
         UUIDArticleDetailDto uuidArticleDetailDTO = articleService.articleFindOne(uuid);
+
 
         return ResponseEntity.ok().body(uuidArticleDetailDTO);
     }
