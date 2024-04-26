@@ -3,16 +3,12 @@ package com.project.tms.service;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.Scrap;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.ScrapDto;
-import com.project.tms.dto.UUIDArticleDTO;
 import com.project.tms.repository.MemberRepository;
 import com.project.tms.repository.ScrapRepository;
 import com.project.tms.repository.UUIDArticleRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;

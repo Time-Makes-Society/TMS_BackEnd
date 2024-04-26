@@ -21,9 +21,9 @@ spring:
     #    password: Tmdcks6502@
 
     #    김승찬 local
-   url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
-   username: root
-   password: Tmdcks6502@
+    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
+    username: root
+    password: Tmdcks6502@
 
   #  jpa:
   #    properties:
