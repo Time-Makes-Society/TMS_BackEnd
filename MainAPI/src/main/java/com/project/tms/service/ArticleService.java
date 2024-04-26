@@ -2,9 +2,11 @@ package com.project.tms.service;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.UUIDArticleDTO;
+import com.project.tms.dto.UUIDArticleDetailDto;
+import com.project.tms.dto.UUIDArticleListDto;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,19 +47,46 @@ public class ArticleService {
         return uuidArticleRepository.findAll(pageable);
     }
 
-    public Page<UUIDArticle> manyCategoryfindAll(String category, Pageable pageable) {
+    public Page<UUIDArticle> manyCategoryFindAll(String category, Pageable pageable) {
         return uuidArticleRepository.findByCategoryOrderByCreatedDateDesc(category, pageable);
     }
 
+
+    public UUIDArticleDetailDto articleFindOne(UUID uuid) {
+        UUIDArticle uuidArticle = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new EntityNotFoundException("UUIDArticle not found with id: " + uuid));
+
+        return entityToDetailDTO(uuidArticle);
+    }
+
+    private UUIDArticleDetailDto entityToDetailDTO(UUIDArticle uuidArticle) {
+        UUIDArticleDetailDto articleDetailDTO = new UUIDArticleDetailDto();
+
+        articleDetailDTO.setTitle(uuidArticle.getTitle());
+        articleDetailDTO.setContent(uuidArticle.getContent());
+        articleDetailDTO.setCategory(uuidArticle.getCategory());
+        articleDetailDTO.setImage(uuidArticle.getImage());
+        articleDetailDTO.setLink(uuidArticle.getLink());
+        articleDetailDTO.setArticleTime(uuidArticle.getArticleTime());
+
+        // 시간대 변환
+        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+        articleDetailDTO.setCreatedDate(createdDate);
+
+        return articleDetailDTO;
+    }
+
+
     // 가공한 news 테이블 데이터를 PageDTO 형식으로 재가공하는 메서드
-    public Page<UUIDArticleDTO> entityToPageDTO(Page<UUIDArticle> articlePage) {
+    public Page<UUIDArticleListDto> entityToPageDTO(Page<UUIDArticle> articlePage) {
         return articlePage.map(uuidArticle -> {
-            UUIDArticleDTO dto = new UUIDArticleDTO();
+            UUIDArticleListDto dto = new UUIDArticleListDto();
             dto.setId(uuidArticle.getId());
             dto.setTitle(uuidArticle.getTitle());
             dto.setCategory(uuidArticle.getCategory());
             dto.setImage(uuidArticle.getImage());
             dto.setArticleTime(uuidArticle.getArticleTime());
+            dto.setPublisher(uuidArticle.getPublisher());
 
             // 시간대 변환
             LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
@@ -139,8 +169,8 @@ public class ArticleService {
     }
 
     // UUIDArticle 엔티티를 UUIDArticleDTO로 변환하는 메서드
-    private UUIDArticleDTO entityToDTO(UUIDArticle uuidArticle) {
-        UUIDArticleDTO dto = new UUIDArticleDTO();
+    private UUIDArticleListDto entityToDTO(UUIDArticle uuidArticle) {
+        UUIDArticleListDto dto = new UUIDArticleListDto();
         dto.setId(uuidArticle.getId());
         dto.setTitle(uuidArticle.getTitle());
         dto.setCategory(uuidArticle.getCategory());
@@ -153,63 +183,9 @@ public class ArticleService {
         return dto;
     }
 
-    // dfs 알고리즘으로 기사들의 시간을 조합하여 가장 근접한 시간을 찾는 메서드
-    /*public List<UUIDArticleDTO> findClosestToTargetTimeByCategory(String category, String targetTime, int pageSize, int pageNumber) {
-        // String 형식의 시간을 LocalTime으로 변환
-        LocalTime target = LocalTime.parse(targetTime);
-
-        // 카테고리 별로 기사들을 가져오는 메서드 호출
-        List<UUIDArticle> articles = uuidArticleRepository.findByCategoryAndArticleTimeBefore(category, target);
-
-        // 가장 가까운 기사들을 저장할 리스트
-        List<UUIDArticle> closestArticles = new ArrayList<>();
-
-        // 선택된 기사들을 저장할 리스트
-        List<UUIDArticle> selectedArticles = new ArrayList<>();
-
-        // 가장 가까운 기사들의 조합을 찾기 위한 재귀 호출
-        findClosestArticles(articles, target, 0, LocalTime.of(0, 0), selectedArticles, closestArticles);
-
-        // 페이지에 맞게 결과를 자름
-        int startIndex = pageNumber * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, closestArticles.size());
-
-        // DTO로 변환하여 반환
-        return closestArticles.subList(startIndex, endIndex)
-                .stream()
-                .map(this::entityToDTO)
-                .collect(Collectors.toList());
-    }*/
-
-    // target이 들어왔을 때 호출되는 메서드
-    /*public List<UUIDArticleDTO> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize, int pageNumber) {
-        // 모든 지정된 카테고리에서 기사 목록을 저장할 리스트를 초기화
-        List<UUIDArticle> allArticles = new ArrayList<>();
-
-        // 각 카테고리를 반복하고 각 카테고리에서 기사를 가져옴
-        for (String category : categories) {
-            List<UUIDArticle> articles = uuidArticleRepository.findByCategoryAndArticleTimeBefore(category, targetTime);
-            allArticles.addAll(articles);
-        }
-
-        List<UUIDArticle> closestArticles = new ArrayList<>();
-
-        // 가장 가까운 기사들을 찾는 메서드를 호출합니다.
-        findClosestArticles(allArticles, targetTime, 0, LocalTime.of(0, 0, 0), new ArrayList<>(), closestArticles);
-
-        // 페이지에 맞게 결과를 자름
-        int startIndex = pageNumber * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, closestArticles.size());
-
-        // DTO로 변환하여 반환
-        return closestArticles.subList(startIndex, endIndex)
-                .stream()
-                .map(this::entityToDTO)
-                .collect(Collectors.toList());
-    }*/
 
     // 쿼리를 사용하여 target 시간에 가장 가까운 기사들을 가져오는 메서드
-    public List<UUIDArticleDTO> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize, int pageNumber) {
+    public List<UUIDArticleListDto> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize) {
         List<UUIDArticle> closestArticles = new ArrayList<>();
 
         // 쿼리를 사용하여 각 카테고리에서 target 시간 이전의 기사들을 가져옴
@@ -219,8 +195,8 @@ public class ArticleService {
         findClosestArticles(allArticles, targetTime, 0, LocalTime.of(0, 0, 0), new ArrayList<>(), closestArticles);
 
         // 페이지에 맞게 결과를 자름
-        int startIndex = pageNumber * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, closestArticles.size());
+        int startIndex = pageSize;
+        int endIndex = Math.min(startIndex, closestArticles.size());
 
         // DTO로 변환하여 반환
         return closestArticles.subList(startIndex, endIndex)

@@ -16,6 +16,7 @@ public class LoginCheckFilter implements Filter {
     private static final String[] whiteList = {"/api/login", "/api/logout", "/api/members/signup", "/api/firstAPI/*", "/api/timerExpired"};
 
 
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
