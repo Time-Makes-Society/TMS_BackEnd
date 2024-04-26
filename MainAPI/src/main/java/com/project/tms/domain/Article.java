@@ -16,19 +16,20 @@ public class Article {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id; // ID 값은 직접 설정
 
-
     private String title;
+
     @Lob
     @Column(columnDefinition = "text")
     private String content;
 
-    //    private String createdDate;
-    // String에서 LocalDateTime으로 변경
     private LocalDateTime createdDate;
+
     private String publisher;
 
     private String category;
+
     private String image;
+
     private String link;
 }
 
