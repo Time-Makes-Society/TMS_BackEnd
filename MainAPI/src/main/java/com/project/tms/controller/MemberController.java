@@ -5,13 +5,18 @@ import com.project.tms.domain.MemberTag;
 import com.project.tms.dto.MemberDto;
 import com.project.tms.repository.TagRepository;
 import com.project.tms.service.MemberService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -117,5 +122,16 @@ public class MemberController {
         }
     }
 
+    /**
+     * 회원 조회
+     */
+    @GetMapping("{memberId}/get")
+    public List<MemberDto> members(@PathVariable Long memberId) {
+        Optional<Member> findMember = memberService.findById(memberId);
+
+        return findMember.map(m ->
+                        Collections.singletonList(new MemberDto(m.getLoginId(), m.getPassword(), m.getMemberName())))
+                .orElse(Collections.emptyList());
+    }
 
 }
