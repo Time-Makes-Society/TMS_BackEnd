@@ -125,7 +125,7 @@ public class MemberController {
     /**
      * 회원 조회
      */
-    @GetMapping("{memberId}/get")
+    @GetMapping("/get/{memberId}")
     public List<MemberDto> members(@PathVariable Long memberId) {
         Optional<Member> findMember = memberService.findById(memberId);
 
