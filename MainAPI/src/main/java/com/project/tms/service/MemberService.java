@@ -62,28 +62,58 @@ public class MemberService {
 //        }
 //        memberRepository.save(member);
 //    }
+
+
+//    @Transactional
+//    public void selectTags(Member member, List<String> tagNames) {
+////        if (!tagNames.isEmpty()) {
+////            member.getTagList().clear();
+////        }
+//        member.getTagList().clear();
+//
+//        for (String tagName : tagNames) {
+//
+//            Long tagId = findTagIdByName(tagName);
+//
+//            if (tagId != null) {
+//
+//                Tag tag = tagRepository.findById(tagId).orElse(null);
+//
+//                if (tag != null) {
+//                    MemberTag memberTag = new MemberTag();
+//                    memberTag.setMember(member);
+//                    memberTag.setTag(tag);
+//                    member.getTagList().add(memberTag);
+//                }
+//            }
+//        }
+//        memberRepository.save(member);
+//    }
+
     @Transactional
     public void selectTags(Member member, List<String> tagNames) {
-        if (!tagNames.isEmpty()) {
-            member.getTagList().clear();
-        }
-
+        // 새로운 태그 리스트를 추가합니다.
         for (String tagName : tagNames) {
-            // 태그 이름을 사용하여 해당하는 ID를 찾아옵니다.
             Long tagId = findTagIdByName(tagName);
             if (tagId != null) {
-                // 찾은 태그의 ID를 사용하여 MemberTag를 생성하고 저장합니다.
-                Tag tag = tagRepository.findById(tagId).orElse(null);
-                if (tag != null) {
-                    MemberTag memberTag = new MemberTag();
-                    memberTag.setMember(member);
-                    memberTag.setTag(tag);
-                    member.getTagList().add(memberTag);
+                // 이미 추가된 태그는 다시 추가하지 않도록 중복을 확인합니다.
+                boolean tagExists = member.getTagList().stream()
+                        .anyMatch(memberTag -> memberTag.getTag().getId().equals(tagId));
+                if (!tagExists) {
+                    Tag tag = tagRepository.findById(tagId).orElse(null);
+                    if (tag != null) {
+                        MemberTag memberTag = new MemberTag();
+                        memberTag.setMember(member);
+                        memberTag.setTag(tag);
+                        member.getTagList().add(memberTag);
+                    }
                 }
             }
         }
+        // 새로운 태그 리스트만을 저장합니다.
         memberRepository.save(member);
     }
+
 
     private Long findTagIdByName(String tagName) {
         switch (tagName) {
