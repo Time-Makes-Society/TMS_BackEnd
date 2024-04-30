@@ -42,28 +42,28 @@ public class CommentController {
         List<CommentDto> comments = commentService.getCommentsByArticle(articleId);
         if (!comments.isEmpty()) {
             return ResponseEntity.ok(comments);
-        } else {
-            return ResponseEntity.notFound().build();
+        } else { // 204 No Content 반환
+            return ResponseEntity.noContent().build();
         }
     }
 
     @PutMapping("/{articleId}/{commentId}")
-    public ResponseEntity<Comment> updateComment(@PathVariable("articleId") UUIDArticle articleId,
-                                                 @PathVariable("commentId") Long commentId,
-                                                 @RequestBody Comment updatedComment) {
-        Comment updated = commentService.updateComment(articleId, commentId, updatedComment);
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
+    public ResponseEntity<CommentDto> updateComment(@PathVariable("articleId") UUIDArticle articleId,
+                                                    @PathVariable("commentId") Long commentId,
+                                                    @RequestBody Comment updatedComment) {
+        CommentDto updatedCommentDto = commentService.updateComment(articleId, commentId, updatedComment);
+        if (updatedCommentDto != null) {
+            return ResponseEntity.ok(updatedCommentDto);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @DeleteMapping("/{articleId}/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable("articleId") UUIDArticle articleId,
-                                              @PathVariable("commentId") Long commentId) {
+    public ResponseEntity<String> deleteComment(@PathVariable("articleId") UUIDArticle articleId,
+                                                @PathVariable("commentId") Long commentId) {
         commentService.deleteComment(articleId, commentId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("댓글 삭제가 완료되었습니다.");
     }
 
 }

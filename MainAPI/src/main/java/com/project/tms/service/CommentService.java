@@ -7,6 +7,7 @@ import com.project.tms.dto.CommentDto;
 import com.project.tms.repository.CommentRepository;
 import com.project.tms.repository.MemberRepository;
 import com.project.tms.web.login.SessionConst;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,19 +66,18 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public Comment updateComment(UUIDArticle articleId, Long commentId, Comment updatedComment) {
-        Optional<Comment> optionalComment = commentRepository.findByIdAndArticleId(commentId, articleId);
-        if (optionalComment.isPresent()) {
-            Comment comment = optionalComment.get();
-            comment.setContent(updatedComment.getContent());
+    public CommentDto updateComment(UUIDArticle articleId, Long commentId, Comment updatedComment) {
+        Comment comment = commentRepository.findByIdAndArticleId(commentId, articleId).orElse(null);
 
-            return commentRepository.save(comment);
-        } else {
-            return null;
-        }
+        comment.setContent(updatedComment.getContent());
+        CommentDto updatedCommentDto = entityToDto(commentRepository.save(comment));
+
+        return updatedCommentDto;
+
     }
 
 
+    @Transactional
     public void deleteComment(UUIDArticle articleId, Long commentId) {
         commentRepository.deleteByIdAndArticleId(commentId, articleId);
     }
