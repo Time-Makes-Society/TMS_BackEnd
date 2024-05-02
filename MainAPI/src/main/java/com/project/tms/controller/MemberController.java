@@ -86,17 +86,36 @@ public class MemberController {
      * 파라미터 → String List
      * ex) ["ECONOMY", "ENTERTAIN", "WORLD" ]
      */
+//    @PostMapping("/{memberId}/tag")
+//    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
+//        Member member = memberService.findById(memberId).orElse(null);
+//        if (member == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        memberService.selectTags(member, tagNames);
+//
+//        return ResponseEntity.ok("Tags selected successfully");
+//    }
+
     @PostMapping("/{memberId}/tag")
-    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
+    public ResponseEntity<Map<String, Object>> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
+        Map<String, Object> responseBody = new HashMap<>();
         Member member = memberService.findById(memberId).orElse(null);
         if (member == null) {
-            return ResponseEntity.notFound().build();
+            responseBody.put("status", HttpStatus.NOT_FOUND.value());
+            responseBody.put("message", "Member not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
         }
 
         memberService.selectTags(member, tagNames);
 
-        return ResponseEntity.ok("Tags selected successfully");
+        responseBody.put("status", HttpStatus.OK.value());
+        responseBody.put("message", "태그 선택 완료");
+        responseBody.put("data", tagNames);
+        return ResponseEntity.ok(responseBody);
     }
+
 
     @GetMapping("/{memberId}/tags")
     public ResponseEntity<List<String>> getMemberTags(@PathVariable Long memberId) {

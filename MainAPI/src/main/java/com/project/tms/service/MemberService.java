@@ -152,7 +152,7 @@ public class MemberService {
         member.addReadTime(readTime);
         memberRepository.save(member);
     }
-    
+
     public Optional<Member> findById(Long memberId) {
         return memberRepository.findById(memberId);
     }
