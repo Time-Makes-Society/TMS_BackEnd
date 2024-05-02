@@ -3,6 +3,7 @@ package com.project.tms.service;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.Scrap;
 import com.project.tms.domain.UUIDArticle;
+import com.project.tms.dto.ScrapDto;
 import com.project.tms.repository.MemberRepository;
 import com.project.tms.repository.ScrapRepository;
 import com.project.tms.repository.UUIDArticleRepository;
@@ -134,9 +135,31 @@ public class ScrapService {
         for (Object[] result : titleAndCategoryList) {
             String title = (String) result[0];
             String category = (String) result[1];
+            String image = (String) result[2];
             resultList.add("title: " + title);
             resultList.add("category: " + category);
+            resultList.add("content: " + image);
         }
+        return resultList;
+    }
+
+    public List<ScrapDto> getScrapListDto(Long memberId) {
+
+        List<Scrap> scrapList = scrapRepository.findScrapByMemberId(memberId);
+        List<ScrapDto> resultList = new ArrayList<>();
+
+        for (Scrap scrap : scrapList) {
+            ScrapDto scrapDto = new ScrapDto();
+            scrapDto.setTitle(scrap.getTitle());
+            scrapDto.setCategory(scrap.getCategory());
+            scrapDto.setContent(scrap.getContent());
+            scrapDto.setCreatedDate(scrap.getCreatedDate());
+            scrapDto.setImage(scrap.getImage());
+            scrapDto.setLink(scrap.getLink());
+            scrapDto.setArticleTime(scrap.getArticleTime());
+            resultList.add(scrapDto);
+        }
+
         return resultList;
     }
 

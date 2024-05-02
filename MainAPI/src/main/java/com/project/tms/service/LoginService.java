@@ -21,4 +21,9 @@ public class LoginService {
                 .filter(m -> m.getPassword().equals(password))
                 .orElse(null);
     }
+
+    public Long getMemberIdByLoginId(String loginId) {
+        Optional<Member> memberOptional = memberRepository.findAnyByLoginId(loginId);
+        return memberOptional.map(Member::getId).orElse(null);
+    }
 }
