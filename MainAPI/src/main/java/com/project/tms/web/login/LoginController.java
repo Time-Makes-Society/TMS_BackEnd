@@ -75,4 +75,5 @@ public class LoginController {
         log.info("로그아웃 성공");
         return ResponseEntity.ok("로그아웃 성공");
     }
+
 }

@@ -3,10 +3,13 @@ package com.project.tms.controller;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.MemberTag;
 import com.project.tms.dto.MemberDto;
+import com.project.tms.repository.MemberRepository;
 import com.project.tms.repository.TagRepository;
+import com.project.tms.service.LoginService;
 import com.project.tms.service.MemberService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.project.tms.web.login.SessionConst;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class MemberController {
 
     private final MemberService memberService;
+    private final LoginService loginService;
     private final TagRepository tagRepository;
 
     /**
@@ -133,5 +136,35 @@ public class MemberController {
                         Collections.singletonList(new MemberDto(m.getLoginId(), m.getPassword(), m.getMemberName())))
                 .orElse(Collections.emptyList());
     }
+
+    @GetMapping("/current-login-id")
+    public String getCurrentUserLoginId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // 새로운 세션이 생성되지 않도록 false로 설정
+        if (session != null) {
+
+            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember != null) {
+                // 회원 객체에서 아이디를 가져와서 반환
+                return loginMember.getLoginId();
+            }
+        }
+        return null; // 세션이 없거나 로그인 정보가 없는 경우
+    }
+
+    @GetMapping("/current-member-id")
+    public Long getCurrentUserMemberId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // 새로운 세션이 생성되지 않도록 false로 설정
+        if (session != null) {
+            // 세션에서 로그인한 회원 객체를 가져옴
+            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember != null) {
+
+                return loginService.getMemberIdByLoginId(loginMember.getLoginId());
+            }
+        }
+        return null; // 세션이 없거나 로그인 정보가 없는 경우
+    }
+
+
 
 }
