@@ -3,7 +3,7 @@ package com.project.tms.controller;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.MemberTag;
 import com.project.tms.dto.MemberDto;
-import com.project.tms.repository.MemberRepository;
+import com.project.tms.dto.ReadTimeDto;
 import com.project.tms.repository.TagRepository;
 import com.project.tms.service.LoginService;
 import com.project.tms.service.MemberService;
@@ -12,13 +12,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalTime;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -34,11 +33,28 @@ public class MemberController {
      * 회원 가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody MemberDto memberDto) {
-        log.info("회원가입 실행");
-        Long memberId = memberService.join(memberDto);
-//        return ResponseEntity.ok("회원가입이 완료되었습니다. 회원 ID: " + memberId);
-        return ResponseEntity.ok("회원가입이 완료되었습니다. 회원 loginId: " + memberDto.getLoginId());
+    public ResponseEntity<Object> signup(@RequestBody MemberDto memberDto) {
+        try {
+            log.info("회원가입 실행");
+            Long memberId = memberService.join(memberDto);
+
+            // 회원가입 성공 시 응답 생성
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.OK.value());
+            responseBody.put("data", memberDto);
+            responseBody.put("message", "회원가입이 정상적으로 처리되었습니다.");
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            log.error("회원가입 중 오류 발생", e);
+            // 내부 서버 오류 시 응답 생성
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            responseBody.put("data", null);
+            responseBody.put("message", "회원가입 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(responseBody);
+        }
+//        return ResponseEntity.ok("회원가입이 완료되었습니다. 회원 loginId: " + memberDto.getLoginId());
     }
 
 
@@ -133,29 +149,28 @@ public class MemberController {
         Optional<Member> findMember = memberService.findById(memberId);
 
         return findMember.map(m ->
-                        Collections.singletonList(new MemberDto(m.getLoginId(), m.getPassword(), m.getMemberName())))
+                        Collections.singletonList(new MemberDto(m.getLoginId(), m.getPassword(), m.getMemberName(), m.getMemberNickname(), m.getTotalReadTime())))
                 .orElse(Collections.emptyList());
     }
 
-    @GetMapping("/current-login-id")
-    public String getCurrentUserLoginId(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // 새로운 세션이 생성되지 않도록 false로 설정
+    @GetMapping("/loginId")
+    public String getLoginId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
         if (session != null) {
 
             Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
             if (loginMember != null) {
-                // 회원 객체에서 아이디를 가져와서 반환
                 return loginMember.getLoginId();
             }
         }
         return null; // 세션이 없거나 로그인 정보가 없는 경우
     }
 
-    @GetMapping("/current-member-id")
-    public Long getCurrentUserMemberId(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // 새로운 세션이 생성되지 않도록 false로 설정
+    @GetMapping("/memberId")
+    public Long getMemberId(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
         if (session != null) {
-            // 세션에서 로그인한 회원 객체를 가져옴
+
             Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
             if (loginMember != null) {
 
@@ -165,6 +180,31 @@ public class MemberController {
         return null; // 세션이 없거나 로그인 정보가 없는 경우
     }
 
+//    @PostMapping("/readTime")
+//    public ResponseEntity<String> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
+//        memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
+//        return ResponseEntity.ok("읽기 시간이 추가되었습니다.");
+//    }
+
+    @PostMapping("/readTime")
+    public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
+        try {
+            memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.OK.value());
+            responseBody.put("message", "읽기 시간이 추가되었습니다.");
+
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
 
 
 }

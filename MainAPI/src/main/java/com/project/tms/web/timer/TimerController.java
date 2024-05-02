@@ -57,6 +57,10 @@ public class TimerController {
 //        session.invalidate();
         logoutUser(session);
         log.info("타이머 만료로 인한 사용자 로그아웃");
+
+        // 타이머 만료 시 클라이언트에게 HTTP GET 요청을 보냅니다.
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getForObject("http://localhost:8080/api/timerout", String.class);
     }
 
 //    @GetMapping("/timerExpired")

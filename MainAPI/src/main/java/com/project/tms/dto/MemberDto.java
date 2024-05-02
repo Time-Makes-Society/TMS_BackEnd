@@ -1,9 +1,12 @@
 package com.project.tms.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalTime;
 
 
 @Data
@@ -19,4 +22,10 @@ public class MemberDto {
 
     @NotEmpty
     private String memberName; // 사용자 이름
+
+    @NotEmpty
+    private String memberNickname; // 사용자 닉네임
+
+//    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime totalReadTime;
 }

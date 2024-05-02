@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +34,7 @@ public class MemberService {
         member.setLoginId(memberDto.getLoginId());
         member.setPassword(memberDto.getPassword());
         member.setMemberName(memberDto.getMemberName());
+        member.setMemberNickname(memberDto.getMemberNickname());
 
         Member savedMember = memberRepository.save(member);
 
@@ -140,7 +143,16 @@ public class MemberService {
         }
     }
 
-
+    /**
+     * 기사 읽은 시간 누적
+     */
+    @Transactional
+    public void addReadTimeToMember(Long memberId, LocalTime readTime) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new RuntimeException("해당 멤버를 찾을 수 없습니다."));
+        member.addReadTime(readTime);
+        memberRepository.save(member);
+    }
+    
     public Optional<Member> findById(Long memberId) {
         return memberRepository.findById(memberId);
     }
