@@ -224,23 +224,23 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/categoryReadTime")
-    public ResponseEntity<Object> addReadTimeToCategory(@RequestBody ReadTime readTime) {
-        try {
-            memberService.addReadTimeToCategory(readTime.getMember().getId(), readTime.getCategory(), readTime.getReadTime());
-
-            Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("status", HttpStatus.OK.value());
-            responseBody.put("message", "읽은 시간이 카테고리에 추가되었습니다.");
-
-            return ResponseEntity.ok(responseBody);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            errorResponse.put("message", "읽은 시간을 추가하는 중에 오류가 발생했습니다.");
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(errorResponse);
-        }
-    }
+//    @PostMapping("/categoryReadTime")
+//    public ResponseEntity<Object> addReadTimeToCategory(@RequestBody ReadTime readTime) {
+//        try {
+//            memberService.addReadTimeToCategory(readTime.getMember().getId(), readTime.getCategory(), readTime.getReadTime());
+//
+//            Map<String, Object> responseBody = new HashMap<>();
+//            responseBody.put("status", HttpStatus.OK.value());
+//            responseBody.put("message", "읽은 시간이 카테고리에 추가되었습니다.");
+//
+//            return ResponseEntity.ok(responseBody);
+//        } catch (Exception e) {
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+//            errorResponse.put("message", "읽은 시간을 추가하는 중에 오류가 발생했습니다.");
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(errorResponse);
+//        }
+//    }
 }

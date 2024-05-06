@@ -21,9 +21,9 @@ public class ReadTime {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "article_id")
-    private Article article;
+//    @ManyToOne(fetch = LAZY)
+//    @JoinColumn(name = "uuid_id")
+//    private UUIDArticle uuidArticle;
 
     @Column(name = "category")
     private String category;
@@ -41,5 +41,4 @@ public class ReadTime {
     private LocalTime sports;
     private LocalTime technology;
     private LocalTime world;
-
 }

@@ -40,6 +40,9 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberTag> tagList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ReadTime> readTimes = new ArrayList<>();
+
     // getTagList 메서드
     public List<MemberTag> getTagList() {
         return this.tagList;
