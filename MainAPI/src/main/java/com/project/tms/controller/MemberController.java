@@ -2,9 +2,10 @@ package com.project.tms.controller;
 
 import com.project.tms.domain.Member;
 import com.project.tms.domain.MemberTag;
+import com.project.tms.domain.ReadTime;
 import com.project.tms.dto.MemberDto;
 import com.project.tms.dto.ReadTimeDto;
-import com.project.tms.repository.TagRepository;
+import com.project.tms.repository.ReadTimeRepository;
 import com.project.tms.service.LoginService;
 import com.project.tms.service.MemberService;
 import com.project.tms.web.login.SessionConst;
@@ -27,7 +28,6 @@ public class MemberController {
 
     private final MemberService memberService;
     private final LoginService loginService;
-    private final TagRepository tagRepository;
 
     /**
      * 회원 가입
@@ -49,7 +49,6 @@ public class MemberController {
             // 내부 서버 오류 시 응답 생성
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            responseBody.put("data", null);
             responseBody.put("message", "회원가입 중 오류가 발생했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(responseBody);
@@ -225,5 +224,23 @@ public class MemberController {
         }
     }
 
+    @PostMapping("/categoryReadTime")
+    public ResponseEntity<Object> addReadTimeToCategory(@RequestBody ReadTime readTime) {
+        try {
+            memberService.addReadTimeToCategory(readTime.getMember().getId(), readTime.getCategory(), readTime.getReadTime());
 
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.OK.value());
+            responseBody.put("message", "읽은 시간이 카테고리에 추가되었습니다.");
+
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            errorResponse.put("message", "읽은 시간을 추가하는 중에 오류가 발생했습니다.");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
 }

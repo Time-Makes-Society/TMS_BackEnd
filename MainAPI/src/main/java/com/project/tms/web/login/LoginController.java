@@ -56,7 +56,6 @@ public class LoginController {
 
                 Map<String, Object> responseBody = new HashMap<>();
                 responseBody.put("status", HttpStatus.UNAUTHORIZED.value());
-                responseBody.put("data", null);
                 responseBody.put("message", "아이디 또는 비밀번호가 맞지 않습니다.");
 
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
