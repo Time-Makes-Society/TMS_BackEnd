@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,8 +103,14 @@ public class ArticleController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/articles/recommend")
+    @GetMapping("/articles/{uuid}")
+    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
+        UUIDArticleDetailDto uuidArticleDetailDTO = articleService.articleFindOne(uuid);
 
+        return ResponseEntity.ok().body(uuidArticleDetailDTO);
+    }
+
+    @GetMapping("/articles/recommend")
     public ResponseEntity<List<UUIDArticleListDto>> getUUIDArticlesByCategoriesResultTarget(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "target", required = true) String target,
@@ -114,6 +121,8 @@ public class ArticleController {
 
         // 쉼표로 구분된 카테고리 목록을 파싱
         String[] categories = category.split(",");
+
+        log.info("categories: {}", Arrays.toString(categories));
 
         // ":"를 구분자로 사용하여 분과 초를 분리
         String[] timeParts = target.split(":");
@@ -131,13 +140,5 @@ public class ArticleController {
         List<UUIDArticleListDto> closestArticles = articleService.findClosestToTargetTimeByCategories(categories, targetTime, adjustedPageSize);
 
         return ResponseEntity.ok(closestArticles);
-    }
-
-    @GetMapping("/articles/{uuid}")
-    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
-        UUIDArticleDetailDto uuidArticleDetailDTO = articleService.articleFindOne(uuid);
-
-
-        return ResponseEntity.ok().body(uuidArticleDetailDTO);
     }
 }

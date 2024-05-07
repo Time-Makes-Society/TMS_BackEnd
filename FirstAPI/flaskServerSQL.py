@@ -19,12 +19,21 @@ app = Flask(__name__)
 #     charset="utf8",
 # )
 # MySQL 로컬 DB로 설정
+# db = pymysql.connect(
+#     host="localhost",
+#     port=3306,
+#     user="root",
+#     password="3516",
+#     db="tms",
+#     charset="utf8",
+# )
+
 db = pymysql.connect(
     host="localhost",
     port=3306,
     user="root",
-    password="3516",
-    db="tms",
+    password="Tmdcks6502@",
+    db="TMSDB",
     charset="utf8",
 )
 
