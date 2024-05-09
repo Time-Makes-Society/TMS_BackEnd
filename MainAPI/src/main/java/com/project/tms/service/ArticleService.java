@@ -49,14 +49,14 @@ public class ArticleService {
     }
 
 
-    public UUIDArticleDetailDto articleFindOne(UUID uuid) {
+    public UUIDArticle articleFindOne(UUID uuid) {
         UUIDArticle uuidArticle = uuidArticleRepository.findById(uuid)
                 .orElseThrow(() -> new EntityNotFoundException("UUIDArticle not found with id: " + uuid));
 
-        return entityToDetailDTO(uuidArticle);
+        return uuidArticle;
     }
 
-    private UUIDArticleDetailDto entityToDetailDTO(UUIDArticle uuidArticle) {
+    public UUIDArticleDetailDto entityToDetailDTO(UUIDArticle uuidArticle) {
         UUIDArticleDetailDto articleDetailDTO = new UUIDArticleDetailDto();
 
         articleDetailDTO.setTitle(uuidArticle.getTitle());

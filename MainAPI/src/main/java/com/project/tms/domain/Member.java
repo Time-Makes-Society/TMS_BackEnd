@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class Member {
 
     @Id
@@ -20,7 +21,7 @@ public class Member {
     private Long id;
 
 
-    @Column(unique = true, length=20, nullable = false)
+    @Column(unique = true, length = 20, nullable = false)
     private String loginId; // 사용자 로그인 ID
 
     @Column(nullable = false)
@@ -35,8 +36,14 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberTag> tagList = new ArrayList<>();
 
-    // getTagList 메서드
-    public List<MemberTag> getTagList() {
-        return this.tagList;
-    }
+    /*@ManyToMany
+    @JoinTable(
+            name = "ArticleLike",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "uuid_id")
+    )
+    private List<UUIDArticle> likedArticles = new ArrayList<>();*/
+    @OneToMany(mappedBy = "member")
+    private List<ArticleLike> likedArticles = new ArrayList<>();
+
 }

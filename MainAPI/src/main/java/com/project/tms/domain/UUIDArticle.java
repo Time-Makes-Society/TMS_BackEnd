@@ -7,6 +7,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,4 +35,10 @@ public class UUIDArticle {
     private String publisher;
     private LocalTime articleTime;
     private LocalDateTime createdDate;
+    private Long likeCount; // 좋아요 수 필드 추가
+
+    /*@ManyToMany(mappedBy = "likedArticles")
+    private List<Member> likedByMembers = new ArrayList<>();*/
+    @OneToMany(mappedBy = "uuidArticle")
+    private List<ArticleLike> likedByMembers = new ArrayList<>();
 }
