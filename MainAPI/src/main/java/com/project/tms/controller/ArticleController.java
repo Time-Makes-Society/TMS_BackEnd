@@ -2,15 +2,22 @@ package com.project.tms.controller;
 
 
 import com.project.tms.domain.Article;
+import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
+import com.project.tms.dto.LikeCountDto;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.UUIDArticleListDto;
+import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
+import com.project.tms.web.login.SessionConst;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +38,9 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+    @Autowired
+    private ArticleLikeService articleLikeService;
+
 
     // 플라스크 전처리 서버를 작동시켜 pre_news형태의 엔티티를 UUID가 붙은 news 엔티티로 변환해 테이블에 저장하는 메서드
     @GetMapping("/firstAPI/{category}")
@@ -37,7 +48,8 @@ public class ArticleController {
 
         // http://localhost:8081/newssave/category로 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
-        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
+//        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
+        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
         articleService.sendGetRequestToFlask(flaksServerUrl);
 
         // 모든 pre_news에 있는 데이터를 가져옴
@@ -102,8 +114,17 @@ public class ArticleController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/articles/recommend")
+    @GetMapping("/articles/{uuid}")
+    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
 
+        UUIDArticle uuidArticle = articleService.articleFindOne(uuid);
+
+        UUIDArticleDetailDto uuidArticleDetailDto = articleService.entityToDetailDTO(uuidArticle);
+
+        return ResponseEntity.ok().body(uuidArticleDetailDto);
+    }
+
+    @GetMapping("/articles/recommend")
     public ResponseEntity<List<UUIDArticleListDto>> getUUIDArticlesByCategoriesResultTarget(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "target", required = true) String target,
@@ -114,6 +135,8 @@ public class ArticleController {
 
         // 쉼표로 구분된 카테고리 목록을 파싱
         String[] categories = category.split(",");
+
+        log.info("categories: {}", Arrays.toString(categories));
 
         // ":"를 구분자로 사용하여 분과 초를 분리
         String[] timeParts = target.split(":");
@@ -133,11 +156,36 @@ public class ArticleController {
         return ResponseEntity.ok(closestArticles);
     }
 
-    @GetMapping("/articles/{uuid}")
-    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
-        UUIDArticleDetailDto uuidArticleDetailDTO = articleService.articleFindOne(uuid);
+    @PostMapping("/articles/like/{uuid}")
+    public ResponseEntity<UUIDArticle> likeArticle(@PathVariable UUID uuid, HttpSession session) {
+        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember != null) {
+            Long memberId = loginMember.getId();
+            articleLikeService.likeArticle(uuid, memberId);
+            return ResponseEntity.ok().build();
+        } else {
+            // 로그인되지 않은 사용자에 대한 처리
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 
+    @GetMapping("/articles/like/{uuid}")
+    public ResponseEntity<LikeCountDto> getLikeCount(@PathVariable UUID uuid) {
+        LikeCountDto likeCountDto = articleLikeService.getLikeCount(uuid);
 
-        return ResponseEntity.ok().body(uuidArticleDetailDTO);
+        return ResponseEntity.ok(likeCountDto);
+    }
+
+    @DeleteMapping("/articles/like/{uuid}")
+    public ResponseEntity<Void> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
+        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        if (loginMember != null) {
+            Long memberId = loginMember.getId();
+            articleLikeService.cancelLikeArticle(uuid, memberId);
+            return ResponseEntity.ok().build();
+        } else {
+            // 로그인되지 않은 사용자에 대한 처리
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }
