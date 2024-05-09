@@ -13,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Slf4j
@@ -53,18 +53,35 @@ public class LoginController {
 
             if (loginMember == null) {
                 log.info("로그인 실패");
+
+                Map<String, Object> responseBody = new HashMap<>();
+                responseBody.put("status", HttpStatus.UNAUTHORIZED.value());
+                responseBody.put("message", "아이디 또는 비밀번호가 맞지 않습니다.");
+
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("아이디 또는 비밀번호가 맞지 않습니다.");
+                        .body(responseBody);
             }
 
             session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
             log.info("로그인 성공");
 
-            return ResponseEntity.ok("로그인 성공");
+//            return ResponseEntity.ok("로그인 성공");
+
+            // 로그인 성공 시 응답 생성
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.OK.value());
+            responseBody.put("data", loginMember); // 로그인 멤버의 정보를 넣어줍니다.
+            responseBody.put("message", "로그인 성공");
+            return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
             log.error("로그인 중 오류 발생", e);
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            responseBody.put("data", null);
+            responseBody.put("message", "로그인 중 오류가 발생했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("로그인 중 오류가 발생했습니다.");
+                    .body(responseBody);
         }
     }
 
@@ -76,4 +93,12 @@ public class LoginController {
         return ResponseEntity.ok("로그아웃 성공");
     }
 
+    @GetMapping("/timerout")
+    public ResponseEntity<String> logout() {
+        // 로그아웃되었다는 메시지를 응답으로 보냅니다.
+
+        log.info("타이머 만료 로그아웃 메서드 실행 성공");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("타이머 종료로 로그아웃되었습니다.");
+    }
 }

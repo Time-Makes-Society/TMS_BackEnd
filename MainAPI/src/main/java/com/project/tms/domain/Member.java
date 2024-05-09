@@ -6,7 +6,9 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.springframework.lang.NonNull;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +32,33 @@ public class Member {
     @Column(nullable = false)
     private String memberName; // 사용자 이름
 
+    @Column(nullable = false)
+    private String memberNickname; // 사용자 닉네임
+
     @JsonFormat(pattern = "HH:mm:ss")
-    private LocalDateTime totalReadTime;
+    private LocalTime totalReadTime;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberTag> tagList = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ReadTime> readTimes = new ArrayList<>();
+
+    // getTagList 메서드
+    public List<MemberTag> getTagList() {
+        return this.tagList;
+    }
+
+    public void addReadTime(LocalTime readTime) {
+        if (this.totalReadTime == null) {
+            this.totalReadTime = readTime; // 최초의 읽기 시간 설정
+        } else {
+            this.totalReadTime = this.totalReadTime.plusHours(readTime.getHour())
+                    .plusMinutes(readTime.getMinute())
+                    .plusSeconds(readTime.getSecond()); // 기존 읽기 시간에 새로운 읽기 시간 추가
+        }
+    }
 
     /*@ManyToMany
     @JoinTable(

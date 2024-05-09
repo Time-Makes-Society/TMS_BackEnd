@@ -149,7 +149,11 @@ public class ScrapService {
         List<ScrapDto> resultList = new ArrayList<>();
 
         for (Scrap scrap : scrapList) {
+
             ScrapDto scrapDto = new ScrapDto();
+
+            scrapDto.setUuidArticleId(String.valueOf(scrap.getUuidArticle().getId()));
+
             scrapDto.setTitle(scrap.getTitle());
             scrapDto.setCategory(scrap.getCategory());
             scrapDto.setContent(scrap.getContent());

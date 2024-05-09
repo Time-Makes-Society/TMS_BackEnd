@@ -46,6 +46,7 @@ public class TestDataInit {
         memberDto.setLoginId("test");
         memberDto.setPassword("test!");
         memberDto.setMemberName("testUser");
+        memberDto.setMemberNickname("testNickname");
 
         memberService.join(memberDto);
         loginService.login("test", "test!");
