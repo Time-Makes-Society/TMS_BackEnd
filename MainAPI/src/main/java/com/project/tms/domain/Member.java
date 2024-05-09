@@ -2,12 +2,8 @@ package com.project.tms.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
-import org.springframework.lang.NonNull;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +31,7 @@ public class Member {
     @Column(nullable = false)
     private String memberNickname; // 사용자 닉네임
 
+
     @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime totalReadTime;
 
@@ -44,11 +41,6 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ReadTime> readTimes = new ArrayList<>();
-
-    // getTagList 메서드
-    public List<MemberTag> getTagList() {
-        return this.tagList;
-    }
 
     public void addReadTime(LocalTime readTime) {
         if (this.totalReadTime == null) {
@@ -60,14 +52,8 @@ public class Member {
         }
     }
 
-    /*@ManyToMany
-    @JoinTable(
-            name = "ArticleLike",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "uuid_id")
-    )
-    private List<UUIDArticle> likedArticles = new ArrayList<>();*/
-    @OneToMany(mappedBy = "member")
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ArticleLike> likedArticles = new ArrayList<>();
 
 }

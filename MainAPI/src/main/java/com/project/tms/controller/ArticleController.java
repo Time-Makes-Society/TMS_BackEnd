@@ -5,12 +5,12 @@ import com.project.tms.domain.Article;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.LikeCountDto;
+import com.project.tms.dto.LikedArticleDto;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.UUIDArticleListDto;
 import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
 import com.project.tms.web.login.SessionConst;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+
 @Log4j2
 @RestController
 @RequestMapping("/api")
@@ -46,7 +47,7 @@ public class ArticleController {
     @GetMapping("/firstAPI/{category}")
     public ResponseEntity<String> sendFlaskAndConvertToUUID(@PathVariable(name = "category") String category) throws UnsupportedEncodingException {
 
-        // http://localhost:8081/newssave/category로 엔트포인트로 GET 요청을 보냄
+        // Flask 서버 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
         String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
 //        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
@@ -157,12 +158,12 @@ public class ArticleController {
     }
 
     @PostMapping("/articles/like/{uuid}")
-    public ResponseEntity<UUIDArticle> likeArticle(@PathVariable UUID uuid, HttpSession session) {
+    public ResponseEntity<String> likeArticle(@PathVariable UUID uuid, HttpSession session) {
         Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
         if (loginMember != null) {
             Long memberId = loginMember.getId();
             articleLikeService.likeArticle(uuid, memberId);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("좋아요 완료");
         } else {
             // 로그인되지 않은 사용자에 대한 처리
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -177,15 +178,47 @@ public class ArticleController {
     }
 
     @DeleteMapping("/articles/like/{uuid}")
-    public ResponseEntity<Void> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
+    public ResponseEntity<String> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
         Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
         if (loginMember != null) {
             Long memberId = loginMember.getId();
             articleLikeService.cancelLikeArticle(uuid, memberId);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("좋아요 삭제");
         } else {
             // 로그인되지 않은 사용자에 대한 처리
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    /*@GetMapping("/likedArticles")
+    public ResponseEntity<List<LikedArticleDto>> getLikedArticles(HttpSession session) {
+        Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
+        log.info("likedArticles: {}", likedArticles);
+
+        // UUIDArticle 엔티티 정보를 DTO로 변환
+        List<LikedArticleDto> likedArticleDto = articleLikeService.entityToDto(likedArticles);
+        log.info("likedArticleDto: {}", likedArticleDto);
+
+        return ResponseEntity.ok(likedArticleDto);
+    }*/
+
+    @GetMapping("/likedArticles")
+    public ResponseEntity<LikedArticleDto> getLikedArticles(HttpSession session) {
+        Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
+        log.info("likedArticles: {}", likedArticles);
+
+        // UUIDArticle 엔티티 정보를 DTO로 변환
+        List<UUIDArticleListDto> uuidArticleListDtos = articleLikeService.entityToDto(likedArticles);
+        log.info("uuidArticleListDtos: {}", uuidArticleListDtos);
+
+        LikedArticleDto likedArticleDto = new LikedArticleDto();
+        likedArticleDto.setLikedArticleList(uuidArticleListDtos);
+
+        return ResponseEntity.ok(likedArticleDto);
     }
 }

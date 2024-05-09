@@ -35,10 +35,10 @@ public class UUIDArticle {
     private String publisher;
     private LocalTime articleTime;
     private LocalDateTime createdDate;
-    private Long likeCount; // 좋아요 수 필드 추가
 
-    /*@ManyToMany(mappedBy = "likedArticles")
-    private List<Member> likedByMembers = new ArrayList<>();*/
+    @Column(nullable = false)
+    private Long likeCount = 0L; // 좋아요 수 필드 추가 및 초기값 설정
+
     @OneToMany(mappedBy = "uuidArticle")
     private List<ArticleLike> likedByMembers = new ArrayList<>();
 }
