@@ -10,8 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -46,4 +51,28 @@ public class ReadTimeController {
         ReadTimeCategoryDto readTimeCategoryDto = readTimeService.getReadTimeByMemberId(memberId);
         return new ResponseEntity<>(readTimeCategoryDto, HttpStatus.OK);
     }
+
+    @GetMapping("/readTimeRank/{memberId}")
+    public ResponseEntity<Map<String, Integer>> getTopCategoriesPercentage(@PathVariable Long memberId) {
+        ReadTimeCategoryDto readTimeCategoryDto = readTimeService.getReadTimeByMemberId(memberId);
+        Map<String, LocalTime> categoryTimes = readTimeCategoryDto.toMap();
+
+        List<Map.Entry<String, LocalTime>> nonNullCategories = categoryTimes.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+
+        double totalTime = nonNullCategories.stream()
+                .mapToLong(entry -> entry.getValue().toSecondOfDay())
+                .sum();
+
+        Map<String, Integer> categoryPercentages = new HashMap<>();
+        nonNullCategories.stream().limit(4).forEach(entry -> {
+            int percentage = (int) (entry.getValue().toSecondOfDay() / totalTime * 100.0);
+            categoryPercentages.put(entry.getKey(), percentage);
+        });
+
+        return new ResponseEntity<>(categoryPercentages, HttpStatus.OK);
+    }
+
 }

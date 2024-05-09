@@ -41,4 +41,6 @@ public class ReadTime {
     private LocalTime sports;
     private LocalTime technology;
     private LocalTime world;
+
+    private String uuidArticleId;
 }
