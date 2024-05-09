@@ -4,10 +4,7 @@ package com.project.tms.controller;
 import com.project.tms.domain.Article;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.LikeCountDto;
-import com.project.tms.dto.LikedArticleDto;
-import com.project.tms.dto.UUIDArticleDetailDto;
-import com.project.tms.dto.UUIDArticleListDto;
+import com.project.tms.dto.*;
 import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
 import com.project.tms.web.login.SessionConst;
@@ -25,10 +22,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Log4j2
@@ -63,7 +58,7 @@ public class ArticleController {
     }
 
 
-    @GetMapping("/articles")
+    /*@GetMapping("/articles")
     public ResponseEntity<List<Page<UUIDArticleListDto>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
                                                                                       @RequestParam(value = "page", defaultValue = "0") int page,
                                                                                       Pageable pageable) {
@@ -113,7 +108,144 @@ public class ArticleController {
             }
         }
         return ResponseEntity.ok(result);
+    }*/
+
+
+    /*@GetMapping("/articles")
+    public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
+                                                                           @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                           Pageable pageable) {
+        // 쿼리스트링이 비어있는 경우 기본값 설정
+        if (categoryString == null || categoryString.isEmpty()) {
+            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
+        }
+
+        // 쉼표로 구분된 카테고리 목록을 파싱
+        String[] categories = categoryString.split(",");
+
+        // 페이징 결과를 저장할 리스트
+        List<Page<UUIDArticleListDto>> result = new ArrayList<>();
+
+        // 동적 페이징 설정
+        int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
+        int pageNumber = page; // page 쿼리 스트링
+        int maxPageSize = 5; // 최대 아이템 개수
+        int adjustedPageSize = Math.min(pageSize, maxPageSize); // 둘 중 더 작은 page의 수를 적용
+
+        // 페이지 번호, 한 페이지의 아이템 개수 설정
+        int pageMaxSize = maxPageSize * categories.length; // 카테고리당 최대 아이템 개수
+        int pageCurrentSize = 0; // 현재 페이지의 아이템 개수
+
+        // 페이징 번호, 한 페이지의 아이템 개수, pageable 객체의 정렬을 이용해 pageable 객체 생성
+        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
+
+        // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
+        if (categoryString.isEmpty()) {
+            // 가공한 모든 데이터를 받아옴
+            Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
+            // 각 페이지에 맞게 DTO로 변환
+            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+            // 페이징 결과 리스트에 데이터를 추가
+            result.add(dtoPage);
+            pageCurrentSize = dtoPage.getNumberOfElements();
+        } else {  // 각 category별로 데이터 가져오기
+            // 리스트 스플릿으로 자른 것을 category 변수로 순회
+            for (String category : categories) {
+                // 최신순으로 category 변수를 순회
+                Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, pageableWithAdjustedSize);
+                // 각 페이지에 맞게 DTO로 변환
+                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+                result.add(dtoPage);
+                pageCurrentSize += dtoPage.getNumberOfElements();
+            }
+        }
+
+        long totalElements = 0;
+        if (!categoryString.isEmpty()) {
+            totalElements = articleService.countByCategoryIn(Arrays.asList(categories));
+        } else {
+            totalElements = articleService.countAllArticles(); // 카테고리가 없는 경우 전체 기사 수를 구함
+        }
+
+        // totalPages 계산
+        int totalPages = (int) Math.ceil((double) totalElements / adjustedPageSize);
+
+        // 페이지 정보 설정
+        Map<String, Object> response = new HashMap<>();
+        List<UUIDArticleListDto> articles = result.stream().flatMap(pageData -> pageData.getContent().stream()).collect(Collectors.toList());
+        ArticlePageDto articlePageDto = new ArticlePageDto(pageNumber, pageMaxSize, pageCurrentSize, totalPages, totalElements);
+        response.put("articles", articles);
+        response.put("pageInfo", articlePageDto);
+
+        return ResponseEntity.ok(response);
+    }*/
+
+    @GetMapping("/articles")
+    public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
+                                                                           @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                           Pageable pageable) {
+        // 쿼리스트링이 비어있는 경우 기본값 설정
+        if (categoryString == null || categoryString.isEmpty()) {
+            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
+        }
+
+        // 쉼표로 구분된 카테고리 목록을 파싱
+        String[] categories = categoryString.split(",");
+
+        // 페이징 결과를 저장할 리스트
+        List<Page<UUIDArticleListDto>> result = new ArrayList<>();
+
+        // 동적 페이징 설정
+        int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
+        int pageNumber = page; // page 쿼리 스트링
+        int maxPageSize = 5; // 최대 아이템 개수
+        int adjustedPageSize = Math.min(pageSize, maxPageSize); // 둘 중 더 작은 page의 수를 적용
+
+        // 페이지 번호, 한 페이지의 아이템 개수 설정
+        int pageCurrentSize = 0; // 현재 페이지의 아이템 개수
+
+        // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
+        if (categoryString.isEmpty()) {
+            // 가공한 모든 데이터를 받아옴
+            Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort()));
+            // 각 페이지에 맞게 DTO로 변환
+            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+            // 페이징 결과 리스트에 데이터를 추가
+            result.add(dtoPage);
+            pageCurrentSize = dtoPage.getNumberOfElements();
+        } else {  // 각 category별로 데이터 가져오기
+            // 리스트 스플릿으로 자른 것을 category 변수로 순회
+            for (String category : categories) {
+                // 최신순으로 category 변수를 순회
+                Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort()));
+                // 각 페이지에 맞게 DTO로 변환
+                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+                result.add(dtoPage);
+                pageCurrentSize += dtoPage.getNumberOfElements();
+            }
+        }
+
+        long totalElements = 0;
+        if (!categoryString.isEmpty()) {
+            totalElements = articleService.countByCategoryIn(Arrays.asList(categories));
+        } else {
+            totalElements = articleService.countAllArticles(); // 카테고리가 없는 경우 전체 기사 수를 구함
+        }
+
+        // totalPages 계산
+        int totalPages = (int) Math.ceil((double) totalElements / (adjustedPageSize * categories.length));
+
+        // 페이지 정보 설정
+        Map<String, Object> response = new HashMap<>();
+        List<UUIDArticleListDto> articles = result.stream().flatMap(pageData -> pageData.getContent().stream()).collect(Collectors.toList());
+        ArticlePageDto articlePageDto = new ArticlePageDto(pageNumber, adjustedPageSize * categories.length, pageCurrentSize, totalPages, totalElements);
+        response.put("articles", articles);
+        response.put("pageInfo", articlePageDto);
+
+        return ResponseEntity.ok(response);
     }
+
+
 
     @GetMapping("/articles/{uuid}")
     public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {

@@ -92,6 +92,16 @@ public class ArticleService {
         });
     }
 
+    // 카테고리별 기사 수를 조회하는 메서드
+    public long countByCategoryIn(List<String> categories) {
+        return uuidArticleRepository.countByCategoryIn(categories);
+    }
+
+    // 전체 기사 수를 조회하는 메서드
+    public long countAllArticles() {
+        return uuidArticleRepository.count();
+    }
+
     // 데이터를 읽어와서 새로운 엔티티를 생성하고 저장하는 메서드
     public void oldEntityToNewEntity(List<Article> articles) {
         for (Article article : articles) {
