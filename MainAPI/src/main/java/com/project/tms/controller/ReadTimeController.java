@@ -41,7 +41,7 @@ public class ReadTimeController {
         }
     }
 
-    @GetMapping("/readTime/{memberId}")
+    @GetMapping("/categoryReadTime/{memberId}")
     public ResponseEntity<ReadTimeCategoryDto> getReadTimeByMemberId(@PathVariable Long memberId) {
         ReadTimeCategoryDto readTimeCategoryDto = readTimeService.getReadTimeByMemberId(memberId);
         return new ResponseEntity<>(readTimeCategoryDto, HttpStatus.OK);
