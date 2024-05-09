@@ -1,24 +1,27 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from newspaper import Article
 import pymysql
 import requests
 from datetime import datetime
 from urllib.parse import urlparse
 from dateutil import parser
+import re
 
 app = Flask(__name__)
 
 # MySQL 연결 설정
-# ec2 설정
+
+# rds
 # db = pymysql.connect(
-#     host="ec2-3-39-185-190.ap-northeast-2.compute.amazonaws.com",
+#     host="tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com",
 #     port=3306,
 #     user="kscold",
-#     password="Tmdcks6502@",
+#     password="tmdcks6502",
 #     db="TMSDB",
 #     charset="utf8",
 # )
-# MySQL 로컬 DB로 설정
+
+# local
 # db = pymysql.connect(
 #     host="localhost",
 #     port=3306,
@@ -63,6 +66,27 @@ headers = {
     "X-Naver-Client-Id": "24tVb8KYxigJdaJ_mh7W",
     "X-Naver-Client-Secret": "jvjDit0K83",
 }
+
+
+# 기사 내용에서 html 태그를 제거하는 함수
+def remove_html_tags_keep_content(text):
+    clean = re.compile("<.*?>")
+    return re.sub(clean, "", text).replace("\n\n", "\n").strip()  # 개행 문자를 유지함
+
+
+# 기사 제목에서 HTML 태그를 제거하는 함수
+def remove_html_tags_from_title(text):
+    clean = re.compile("<.*?>")
+    return re.sub(clean, "", text).strip()
+
+
+# 기사 제목이 이미 존재하는지 확인하는 함수
+def is_duplicate(title):
+    escaped_title = title.replace("'", "''")  # 작은따옴표를 이스케이프 처리
+    sql = f"SELECT COUNT(*) FROM news WHERE title = '{escaped_title}'"
+    cursor.execute(sql)
+    count = cursor.fetchone()[0]
+    return count > 0
 
 
 @app.route("/newssave/<keyword>", methods=["GET"])
@@ -111,7 +135,13 @@ def save_news(keyword):
                 article = Article(original_link)
                 article.download()
                 article.parse()
-                content = article.text
+
+                # HTML 태그 제거 함수 호출하여 기사 제목에서 태그 제거
+                title = remove_html_tags_from_title(article.title)
+
+                # HTML 태그 제거 함수 호출하여 기사 내용에서 태그 제거 및 개행 문자 유지
+                content = remove_html_tags_keep_content(article.text)
+
                 # 이미지 URL 가져오기
                 image_url = article.top_image if article.top_image else ""
                 # 기사 내용이 비어있으면 건너뜀
@@ -125,11 +155,7 @@ def save_news(keyword):
             # pubDate를 LocalDateTime으로 변환
             createdDate = parser.parse(pubDate).strftime("%Y-%m-%d %H:%M:%S")
 
-            # SQL query 작성
-            # sql = "INSERT INTO pre_news (title, content, createdDate, category, image, link) VALUES (%s, %s, %s, %s, %s, %s)"
-            # val = (title, content, createdDate, query, image_url, original_link)
-
-            # newspaper 라이브러리에서 언론사 정보 가져오기
+            # url에서 언론사 부분을 추출하는 로직
             parsed_url = urlparse(article.source_url)
             domain_parts = parsed_url.netloc.replace("www.", "").split(".")
             publisher = (
@@ -160,15 +186,6 @@ def save_news(keyword):
         return jsonify({"message": "뉴스 기사 저장 완료"})
     else:
         return jsonify({"message": "뉴스 기사를 찾을 수 없습니다."})
-
-
-def is_duplicate(title):
-    # 기사 제목이 이미 존재하는지 확인
-    escaped_title = title.replace("'", "''")  # 작은따옴표를 이스케이프 처리
-    sql = f"SELECT COUNT(*) FROM news WHERE title = '{escaped_title}'"
-    cursor.execute(sql)
-    count = cursor.fetchone()[0]
-    return count > 0
 
 
 @app.route("/news/<keyword>", methods=["GET"])
