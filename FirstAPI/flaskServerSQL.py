@@ -67,6 +67,8 @@ headers = {
     "X-Naver-Client-Secret": "jvjDit0K83",
 }
 
+interrupted = False
+
 
 # 기사 내용에서 html 태그를 제거하는 함수
 def remove_html_tags_keep_content(text):
@@ -89,8 +91,20 @@ def is_duplicate(title):
     return count > 0
 
 
+@app.route("/interrupt", methods=["GET"])
+def interrupt_newssave():
+    global interrupted
+    interrupted = True
+    return jsonify({"message": "뉴스 저장 작업이 중지되었습니다."})
+
+
 @app.route("/newssave/<keyword>", methods=["GET"])
 def save_news(keyword):
+    global interrupted
+    if interrupted:
+        interrupted = False
+        return jsonify({"message": "뉴스 저장 작업이 이미 중지되었습니다."})
+
     # 요청으로부터 키워드 받기
     query = keyword
 
