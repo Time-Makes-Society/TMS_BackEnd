@@ -8,9 +8,10 @@ import com.project.tms.dto.*;
 import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
 import com.project.tms.web.login.SessionConst;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,13 +30,12 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ArticleController {
 
-    @Autowired
-    private ArticleService articleService;
+    private final ArticleService articleService;
 
-    @Autowired
-    private ArticleLikeService articleLikeService;
+    private final ArticleLikeService articleLikeService;
 
 
     // 플라스크 전처리 서버를 작동시켜 pre_news형태의 엔티티를 UUID가 붙은 news 엔티티로 변환해 테이블에 저장하는 메서드
@@ -57,128 +57,6 @@ public class ArticleController {
         return ResponseEntity.ok("스프링 서버에 저장이 완료되었습니다.");
     }
 
-
-    /*@GetMapping("/articles")
-    public ResponseEntity<List<Page<UUIDArticleListDto>>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
-                                                                                      @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                                      Pageable pageable) {
-        // 쿼리스트링이 비어있는 경우 기본값 설정
-        if (categoryString == null || categoryString.isEmpty()) {
-            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
-        }
-
-        // 쉼표로 구분된 카테고리 목록을 파싱
-        String[] categories = categoryString.split(",");
-
-        // 페이징 결과를 저장할 리스트
-        List<Page<UUIDArticleListDto>> result = new ArrayList<>();
-
-        // 동적 페이징 설정
-        int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
-        int pageNumber = page; // page 쿼리 스트링
-        int maxPageSize = 5; // 최대 아이템 개수
-        int adjustedPageSize = Math.min(pageSize, maxPageSize); // 둘 중 더 작은 page의 수를 적용
-
-        // 페이징 번호, 한 페이지의 갯수, pageable 객체의 정렬을 이용해 pageable 객체 생성
-        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
-
-        // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
-        if (categoryString.isEmpty()) {
-
-            // 가공한 모든 데이터를 받아옴
-            Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
-
-            // 각 페이지에 맞게 DTO로 변환
-            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
-
-
-            // 페이징 결과 리스트에 데이터를 추가
-            result.add(dtoPage);
-
-        } else {  // 각 category별로 데이터 가져오기
-            // 리스트 스플릿으로 자른 것을 category 변수로 순회
-            for (String category : categories) {
-                // 최신순으로 category 변수를 순회
-                Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, pageableWithAdjustedSize);
-
-                // 각 페이지에 맞게 DTO로 변환
-                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
-
-                result.add(dtoPage);
-            }
-        }
-        return ResponseEntity.ok(result);
-    }*/
-
-
-    /*@GetMapping("/articles")
-    public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
-                                                                           @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                           Pageable pageable) {
-        // 쿼리스트링이 비어있는 경우 기본값 설정
-        if (categoryString == null || categoryString.isEmpty()) {
-            categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
-        }
-
-        // 쉼표로 구분된 카테고리 목록을 파싱
-        String[] categories = categoryString.split(",");
-
-        // 페이징 결과를 저장할 리스트
-        List<Page<UUIDArticleListDto>> result = new ArrayList<>();
-
-        // 동적 페이징 설정
-        int pageSize = pageable.getPageSize(); // 동적인 pagable의 객체의 쿼리 스트링
-        int pageNumber = page; // page 쿼리 스트링
-        int maxPageSize = 5; // 최대 아이템 개수
-        int adjustedPageSize = Math.min(pageSize, maxPageSize); // 둘 중 더 작은 page의 수를 적용
-
-        // 페이지 번호, 한 페이지의 아이템 개수 설정
-        int pageMaxSize = maxPageSize * categories.length; // 카테고리당 최대 아이템 개수
-        int pageCurrentSize = 0; // 현재 페이지의 아이템 개수
-
-        // 페이징 번호, 한 페이지의 아이템 개수, pageable 객체의 정렬을 이용해 pageable 객체 생성
-        Pageable pageableWithAdjustedSize = PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort());
-
-        // category 쿼리스트링이 비어있는 경우 모든 category의 데이터를 조회
-        if (categoryString.isEmpty()) {
-            // 가공한 모든 데이터를 받아옴
-            Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(pageableWithAdjustedSize);
-            // 각 페이지에 맞게 DTO로 변환
-            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
-            // 페이징 결과 리스트에 데이터를 추가
-            result.add(dtoPage);
-            pageCurrentSize = dtoPage.getNumberOfElements();
-        } else {  // 각 category별로 데이터 가져오기
-            // 리스트 스플릿으로 자른 것을 category 변수로 순회
-            for (String category : categories) {
-                // 최신순으로 category 변수를 순회
-                Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, pageableWithAdjustedSize);
-                // 각 페이지에 맞게 DTO로 변환
-                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
-                result.add(dtoPage);
-                pageCurrentSize += dtoPage.getNumberOfElements();
-            }
-        }
-
-        long totalElements = 0;
-        if (!categoryString.isEmpty()) {
-            totalElements = articleService.countByCategoryIn(Arrays.asList(categories));
-        } else {
-            totalElements = articleService.countAllArticles(); // 카테고리가 없는 경우 전체 기사 수를 구함
-        }
-
-        // totalPages 계산
-        int totalPages = (int) Math.ceil((double) totalElements / adjustedPageSize);
-
-        // 페이지 정보 설정
-        Map<String, Object> response = new HashMap<>();
-        List<UUIDArticleListDto> articles = result.stream().flatMap(pageData -> pageData.getContent().stream()).collect(Collectors.toList());
-        ArticlePageDto articlePageDto = new ArticlePageDto(pageNumber, pageMaxSize, pageCurrentSize, totalPages, totalElements);
-        response.put("articles", articles);
-        response.put("pageInfo", articlePageDto);
-
-        return ResponseEntity.ok(response);
-    }*/
 
     @GetMapping("/articles")
     public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
@@ -209,7 +87,7 @@ public class ArticleController {
             // 가공한 모든 데이터를 받아옴
             Page<UUIDArticle> uuidArticles = articleService.noCategoryFindAll(PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort()));
             // 각 페이지에 맞게 DTO로 변환
-            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+            Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDto(uuidArticles);
             // 페이징 결과 리스트에 데이터를 추가
             result.add(dtoPage);
             pageCurrentSize = dtoPage.getNumberOfElements();
@@ -219,7 +97,7 @@ public class ArticleController {
                 // 최신순으로 category 변수를 순회
                 Page<UUIDArticle> uuidArticles = articleService.manyCategoryFindAll(category, PageRequest.of(pageNumber, adjustedPageSize, pageable.getSort()));
                 // 각 페이지에 맞게 DTO로 변환
-                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDTO(uuidArticles);
+                Page<UUIDArticleListDto> dtoPage = articleService.entityToPageDto(uuidArticles);
                 result.add(dtoPage);
                 pageCurrentSize += dtoPage.getNumberOfElements();
             }
@@ -245,48 +123,64 @@ public class ArticleController {
         return ResponseEntity.ok(response);
     }
 
-
-
+    // 기사 하나 조회
     @GetMapping("/articles/{uuid}")
-    public ResponseEntity<UUIDArticleDetailDto> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
+    public ResponseEntity<Object> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
+        try {
+            UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElseThrow(() -> new EntityNotFoundException());
+            UUIDArticleDetailDto uuidArticleDetailDto = articleService.entityToDetailDto(uuidArticle);
 
-        UUIDArticle uuidArticle = articleService.articleFindOne(uuid);
-
-        UUIDArticleDetailDto uuidArticleDetailDto = articleService.entityToDetailDTO(uuidArticle);
-
-        return ResponseEntity.ok().body(uuidArticleDetailDto);
+            return ResponseEntity.ok().body(uuidArticleDetailDto);
+        } catch (EntityNotFoundException e) {
+            // EntityNotFoundException 발생 시 404 에러를 반환
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("id에 기사를 찾지 못했습니다");
+        }
     }
 
+    // 추천 기사 조회
     @GetMapping("/articles/recommend")
-    public ResponseEntity<List<UUIDArticleListDto>> getUUIDArticlesByCategoriesResultTarget(
+    public ResponseEntity<Object> getUUIDArticlesByCategoriesResultTarget(
             @RequestParam(value = "category", required = true) String category,
             @RequestParam(value = "target", required = true) String target,
             Pageable pageable) {
+        try {
+            // mm:ss 형식의 target 쿼리스트링이 주어진 경우
+            log.info("target: {}", target);
 
-        // mm:ss 형식의 target 쿼리스트링이 주어진 경우
-        log.info("target: {}", target);
+            // 쉼표로 구분된 카테고리 목록을 파싱
+            String[] categories = category.split(",");
 
-        // 쉼표로 구분된 카테고리 목록을 파싱
-        String[] categories = category.split(",");
+            log.info("categories: {}", Arrays.toString(categories));
 
-        log.info("categories: {}", Arrays.toString(categories));
+            // ":"를 구분자로 사용하여 분과 초를 분리
+            String[] timeParts = target.split(":");
 
-        // ":"를 구분자로 사용하여 분과 초를 분리
-        String[] timeParts = target.split(":");
-        int minutes = Integer.parseInt(timeParts[0]); // 분
-        int seconds = Integer.parseInt(timeParts[1]); // 초
+            // 잘못된 형식의 target 파라미터일 때 에러 처리
+            if (timeParts.length != 2) {
+                return ResponseEntity.badRequest().body(Collections.singletonList("잘못된 시간 형식입니다."));
+            }
 
-        // 시간 대신 분과 초만을 사용하여 LocalTime 객체 생성
-        LocalTime targetTime = LocalTime.of(0, minutes, seconds);
+            int minutes = Integer.parseInt(timeParts[0]); // 분
+            int seconds = Integer.parseInt(timeParts[1]); // 초
 
+            // 시간 대신 분과 초만을 사용하여 LocalTime 객체 생성
+            LocalTime targetTime = LocalTime.of(0, minutes, seconds);
 
-        // 최대 페이지 크기를 설정
-        int adjustedPageSize = pageable.getPageSize();
+            // 최대 페이지 크기를 설정
+            int adjustedPageSize = pageable.getPageSize();
 
-        // 지정된 카테고리 및 대상 시간을 기반으로 가장 가까운 기사를 찾는 메서드를 호출
-        List<UUIDArticleListDto> closestArticles = articleService.findClosestToTargetTimeByCategories(categories, targetTime, adjustedPageSize);
+            // 지정된 카테고리 및 대상 시간을 기반으로 가장 가까운 기사를 찾는 메서드를 호출
+            List<UUIDArticleListDto> closestArticles = articleService.findClosestToTargetTimeByCategories(categories, targetTime, adjustedPageSize);
 
-        return ResponseEntity.ok(closestArticles);
+            // 추천기사 리스트가 비어 있는 경우
+            if (closestArticles.isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singleton("추천할 수 있는 기사가 없습니다."));
+            }
+
+            return ResponseEntity.ok(closestArticles);
+        } catch (IllegalArgumentException e) { // 잘못된 형식의 카테고리일 때 에러 처리
+            return ResponseEntity.badRequest().body(Collections.singleton("잘못된 파라미터 형식입니다."));
+        }
     }
 
     @PostMapping("/articles/like/{uuid}")
@@ -323,19 +217,6 @@ public class ArticleController {
         }
     }
 
-    /*@GetMapping("/likedArticles")
-    public ResponseEntity<List<LikedArticleDto>> getLikedArticles(HttpSession session) {
-        Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-
-        List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
-        log.info("likedArticles: {}", likedArticles);
-
-        // UUIDArticle 엔티티 정보를 DTO로 변환
-        List<LikedArticleDto> likedArticleDto = articleLikeService.entityToDto(likedArticles);
-        log.info("likedArticleDto: {}", likedArticleDto);
-
-        return ResponseEntity.ok(likedArticleDto);
-    }*/
 
     @GetMapping("/likedArticles")
     public ResponseEntity<LikedArticleDto> getLikedArticles(HttpSession session) {

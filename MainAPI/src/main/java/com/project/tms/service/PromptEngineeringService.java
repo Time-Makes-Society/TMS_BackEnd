@@ -54,6 +54,7 @@ public class PromptEngineeringService {
         messages.add(addSystemRule("|원문 기사 데이터: 기사 원문 내용| 형식으로 주어져."));
         messages.add(addSystemRule("따라서 기사 원문이 주어지면 너는 원문 기사 총 문자 길이의 70%% 이상 핵심 내용만 요약해 주어야해."));
         messages.add(addSystemRule("원본 데이터는 아무리 짧아도 무조건 적으로 핵심만 요약을 해주어야 해."));
+        messages.add(addSystemRule("어투는 일정하게 대답해야 하며 ~있습니다.의 형식으로 대답해주어야 해"));
 
         // 사용자 쿼리 시작 지점 정의
         messages.add(new Message("user", startUserQuery(articleContent)));

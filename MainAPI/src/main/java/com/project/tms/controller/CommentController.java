@@ -5,47 +5,68 @@ import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.CommentDto;
 import com.project.tms.dto.MemberDto;
+import com.project.tms.service.ArticleService;
 import com.project.tms.service.CommentService;
 import com.project.tms.web.login.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/comment")
+@RequiredArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
-    @Autowired
-    private HttpServletRequest request;
+    private final ArticleService articleService;
+
+    private final HttpServletRequest request;
+
 
     @PostMapping("/{articleId}")
-    public ResponseEntity<String> addCommentToArticle(@PathVariable("articleId") UUIDArticle articleId,
+    public ResponseEntity<String> addCommentToArticle(@PathVariable("articleId") UUID uuid,
                                                       @RequestBody Comment comment) {
         try {
+            UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+            if (uuidArticle == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("존재하지 않은 기사 id입니다.");
+            }
+
             Long userId = ((Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER)).getId();
-            commentService.addCommentToArticle(articleId, comment, userId);
+            commentService.addCommentToArticle(uuidArticle, comment, userId);
             return ResponseEntity.ok("댓글 작성이 완료되었습니다.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("댓글 작성 중 오류가 발생했습니다: " + e.toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
     @GetMapping("/{articleId}")
-    public ResponseEntity<List<CommentDto>> getCommentsByArticle(@PathVariable("articleId") UUIDArticle articleId) {
-        List<CommentDto> comments = commentService.getCommentsByArticle(articleId);
-        if (!comments.isEmpty()) {
-            return ResponseEntity.ok(comments);
-        } else { // 204 No Content 반환
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Object> getCommentsByArticle(@PathVariable("articleId") UUID uuid) {
+        try {
+            UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+            if (uuidArticle == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("존재하지 않은 기사 id입니다.");
+            }
+
+            List<CommentDto> comments = commentService.getCommentsByArticle(uuidArticle);
+
+            if (!comments.isEmpty()) {
+                return ResponseEntity.ok(comments);
+            } else { // 204 No Content 반환
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 

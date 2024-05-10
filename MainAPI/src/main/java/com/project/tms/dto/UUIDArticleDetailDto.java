@@ -6,10 +6,13 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class UUIDArticleDetailDto {
+
+    private UUID id;
     private String title;
     private String content;
     private String category;
@@ -17,4 +20,6 @@ public class UUIDArticleDetailDto {
     private String link;
     private LocalTime articleTime;
     private LocalDateTime createdDate;
+    private Long likeCount;
+
 }
