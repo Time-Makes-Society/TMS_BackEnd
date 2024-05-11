@@ -2,21 +2,26 @@ package com.project.tms.service;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
+import com.project.tms.dto.SilmilarityDto;
+import com.project.tms.dto.flask.FlaskResponse;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.UUIDArticleListDto;
+import com.project.tms.dto.flask.RecommendedArticle;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,6 +37,11 @@ public class ArticleService {
     private final UUIDArticleRepository uuidArticleRepository;
 
     private final ArticleRepository articleRepository;
+
+    // 임베딩을 위해서
+    private final GptService gptService;
+
+    private final RestTemplate restTemplate;
 
 
     // 모든 pre_news에 있는 데이터를 가져오는 메서드
@@ -51,6 +61,12 @@ public class ArticleService {
 
     public Optional<UUIDArticle> articleFindOne(UUID uuid) {
         return uuidArticleRepository.findById(uuid);
+    }
+
+    // 임베딩 값을 필드에 저장시키는 메서드
+    public void saveEmbedding(UUIDArticle uuidArticle, String embedding) {
+        uuidArticle.setEmbedding(embedding);
+        uuidArticleRepository.save(uuidArticle);
     }
 
     // 하나 기사 데이터들을 엔티티에서 dto로 변환하는 메서드
@@ -153,6 +169,7 @@ public class ArticleService {
             uuidArticle.setImage(article.getImage());
             uuidArticle.setLink(article.getLink());
 
+
             // content의 글자 수 계산
             int contentLength = article.getContent().length();
 
@@ -172,6 +189,9 @@ public class ArticleService {
 
             // 새로운 엔티티 저장
             uuidArticleRepository.save(uuidArticle);
+
+            // 임베딩 값을 계산하고 저장
+            gptService.calculateAndSaveEmbedding(uuidArticle);
         }
     }
 
@@ -203,6 +223,56 @@ public class ArticleService {
         }
     }
 
+    // 플라스크에서 유사도를 계산하여 유사한 기사를 반환받는 메서드
+    public FlaskResponse fetchFlaskResponse(String url) {
+        try {
+            // Flask 서버에 GET 요청 보내고 응답 받기
+            ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return responseEntity.getBody();
+            } else {
+                log.error("GET 요청 실패: {}", responseEntity.getStatusCodeValue());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("GET 요청 실패:", e);
+            return null;
+        }
+    }
+
+   /* public SilmilarityDto fetchFlaskResponse(String url) {
+        try {
+            ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                FlaskResponse flaskResponse = responseEntity.getBody();
+                SilmilarityDto silmilarityDto = new SilmilarityDto();
+                List<RecommendedArticle> recommendedArticles = flaskResponse.getRecommendedArticles();
+
+                // 추천된 기사 목록을 순회하면서 DTO에 추가
+                List<UUID> uuidList = new ArrayList<>();
+                List<Double> similarityList = new ArrayList<>();
+                List<String> titleList = new ArrayList<>();
+                for (RecommendedArticle article : recommendedArticles) {
+                    uuidList.add(UUID.fromString(article.getUuid()));
+                    similarityList.add(article.getSimilarity());
+                    titleList.add(article.getTitle());
+                }
+
+                // DTO에 데이터 설정
+                silmilarityDto.setUuid(uuidList);
+                silmilarityDto.setSimilarity(similarityList);
+                silmilarityDto.setTitle(titleList);
+
+                return silmilarityDto;
+            } else {
+                log.error("GET 요청 실패: {}", responseEntity.getStatusCodeValue());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("GET 요청 실패:", e);
+            return null;
+        }
+    }*/
 
     // 카테고리에 해당하는 기사를 뽑아 Target 시간에 가장가까운 articleTime을 조합하여 추천해주는 메서드
     public List<UUIDArticleListDto> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize) {

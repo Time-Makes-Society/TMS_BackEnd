@@ -1,8 +1,11 @@
 package com.project.tms.service;
 
+
+import com.project.tms.client.GptClient;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.UUIDArticleDetailContentDto;
+import com.project.tms.dto.gpt.EmbeddingRequest;
 import com.project.tms.dto.gpt.ChatRequest;
+import com.project.tms.dto.gpt.EmbeddingResponse;
 import com.project.tms.dto.gpt.Message;
 import com.project.tms.repository.UUIDArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,27 +20,21 @@ import java.util.UUID;
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class PromptEngineeringService {
+public class GptService {
 
 
     private final UUIDArticleRepository uuidArticleRepository;
 
+    private final GptClient gpt;
 
     public String articleFindOneToConvertContent(UUID uuid) {
 
-        UUIDArticle articleDetail = uuidArticleRepository.findById(uuid)
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
                 .orElseThrow(() -> new EntityNotFoundException("기사를 찾지 못했습니다. " + uuid));
 
 
-        return entitiyToOnlyContentDto(articleDetail).toString();
-    }
-
-    private UUIDArticleDetailContentDto entitiyToOnlyContentDto(UUIDArticle uuidArticle) {
-        UUIDArticleDetailContentDto dto = new UUIDArticleDetailContentDto();
-
-        dto.setContenet(uuidArticle.getContent());
-
-        return dto;
+        String articleContent = article.getContent().toString();
+        return articleContent;
     }
 
     // 프롬프트 엔지니어링 메서드
@@ -74,9 +71,52 @@ public class PromptEngineeringService {
         return systemRule;
     }
 
-
     // 사용자 쿼리 시작 지점 정의
     private String startUserQuery(String articleContent) {
         return "|원문 기사 데이터: " + articleContent + " |";
     }
+
+    public String articleFindOneToConvertTitle(UUID uuid) {
+
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new EntityNotFoundException("기사를 찾지 못했습니다. " + uuid));
+
+        String articleTitle = article.getTitle().toString();
+        return articleTitle;
+    }
+
+    public EmbeddingRequest calculateEmbeddingRequest(String articleTitle) {
+        EmbeddingRequest request = new EmbeddingRequest();
+        request.setInput(articleTitle); // 기사 제목을 입력으로 설정
+        request.setModel("text-embedding-3-small"); // 사용할 임베딩 모델 지정
+        return request;
+    }
+
+
+    public String calculateAndSaveEmbedding(UUIDArticle uuidArticle) {
+        try {
+            String articleTitle = articleFindOneToConvertTitle(uuidArticle.getId());
+
+            // 기사 제목을 사용하여 임베딩 요청 생성
+            EmbeddingRequest request = calculateEmbeddingRequest(articleTitle);
+
+            // 생성된 임베딩 요청을 사용하여 임베딩 값을 요청
+            EmbeddingResponse response = gpt.embedding(request);
+
+            // 임베딩 값을 문자열로 변환하여 반환
+            String embedding = response.getData().get(0).getEmbedding().toString();
+
+            // UUIDArticle 엔티티에 임베딩 값 저장
+            uuidArticle.setEmbedding(embedding);
+
+            // UUIDArticle 엔티티 저장
+            uuidArticleRepository.save(uuidArticle);
+
+            return embedding;
+        } catch (Exception e) {
+            throw new RuntimeException("임베딩 값을 계산하고 저장하는 중에 오류가 발생했습니다.", e);
+        }
+    }
+
 }
+

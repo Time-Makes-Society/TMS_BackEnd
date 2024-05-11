@@ -36,6 +36,10 @@ public class UUIDArticle {
     private LocalTime articleTime;
     private LocalDateTime createdDate;
 
+    @Column(columnDefinition = "text")
+    private String embedding; // 추천서비스를 위한 embedding 값을 이용함
+
+
     @Column(nullable = false)
     private Long likeCount = 0L; // 좋아요 수 필드 추가 및 초기값 설정
 

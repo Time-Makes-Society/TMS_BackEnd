@@ -6,8 +6,10 @@ import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.gpt.ChatRequest;
 import com.project.tms.dto.gpt.ChatResponse;
+import com.project.tms.dto.gpt.EmbeddingRequest;
+import com.project.tms.dto.gpt.EmbeddingResponse;
 import com.project.tms.service.ArticleService;
-import com.project.tms.service.PromptEngineeringService;
+import com.project.tms.service.GptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -20,9 +22,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class PromptController {
+public class GptController {
 
-    private final PromptEngineeringService promptEngineeringService;
+    private final GptService gptService;
 
     private final ArticleService articleService;
 
@@ -34,10 +36,10 @@ public class PromptController {
             UUID uuid = UUID.fromString(uuidString);
 
             // uuid에 맞는 기사를 검색해서 내용만 추출함
-            String articleContent = promptEngineeringService.articleFindOneToConvertContent(uuid);
+            String articleContent = gptService.articleFindOneToConvertContent(uuid);
 
             // 내용을 요약해 주는 프롬프트 엔지니어링을 거침
-            ChatRequest request = promptEngineeringService.startEngineerPrompt(articleContent);
+            ChatRequest request = gptService.startEngineerPrompt(articleContent);
 
             // GptClient를 통해 chat 요청을 보내고 응답을 받음
             ChatResponse response = gpt.chat(request);
@@ -56,4 +58,28 @@ public class PromptController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유효하지 않은 기사 id입니다.");
         }
     }
+
+    // 임베딩 테스트용
+    @GetMapping("/embedding/{uuid}")
+    public ResponseEntity<String> calculateAndSaveEmbedding(@PathVariable UUID uuid) {
+        try {
+            String articleTitle = gptService.articleFindOneToConvertTitle(uuid);
+
+            // 기사 제목을 사용하여 임베딩 요청 생성
+            EmbeddingRequest request = gptService.calculateEmbeddingRequest(articleTitle);
+
+            // 생성된 임베딩 요청을 사용하여 임베딩 값을 요청
+            EmbeddingResponse response = gpt.embedding(request);
+
+            UUIDArticle uuidArticle = new UUIDArticle();
+            String embedding = response.getData().get(0).getEmbedding().toString();
+            articleService.saveEmbedding(uuidArticle, embedding);
+
+            // 응답 반환
+            return ResponseEntity.ok().body("임베딩 값이 저장되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("임베딩 값을 저장하는 중에 오류가 발생했습니다.");
+        }
+    }
+
 }

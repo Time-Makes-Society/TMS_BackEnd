@@ -15,7 +15,7 @@ public class LoginCheckFilter implements Filter {
 
     private static final String[] whiteList = {
             "/api/login", "/api/logout", "/api/members/signup"
-            , "/api/firstAPI/*", "/api/timerExpired", "/api/members/get/*", "/api/timerout",
+            , "/api/articles/firstAPI/*", "/api/timerExpired", "/api/members/get/*", "/api/timerout",
             "/swagger-ui", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**"
     };
 

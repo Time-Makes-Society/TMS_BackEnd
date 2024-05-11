@@ -5,6 +5,8 @@ import com.project.tms.domain.Article;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.*;
+import com.project.tms.dto.flask.FlaskResponse;
+import com.project.tms.dto.flask.RecommendedArticle;
 import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
 import com.project.tms.web.login.SessionConst;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/articles")
 @RequiredArgsConstructor
 public class ArticleController {
 
@@ -59,7 +61,7 @@ public class ArticleController {
     }
 
 
-    @GetMapping("/articles")
+    @GetMapping("")
     public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString, @RequestParam(value = "page", defaultValue = "0") int page, Pageable pageable) {
         // 쿼리스트링이 비어있는 경우 기본값 설정
         if (categoryString == null || categoryString.isEmpty()) {
@@ -123,7 +125,7 @@ public class ArticleController {
     }
 
     // 기사 하나 조회
-    @GetMapping("/articles/{uuid}")
+    @GetMapping("/{uuid}")
     public ResponseEntity<Object> getUUIDArticlesDetail(@PathVariable(name = "uuid") UUID uuid) {
         try {
             UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElseThrow(() -> new EntityNotFoundException());
@@ -137,7 +139,7 @@ public class ArticleController {
     }
 
     // 추천 기사 조회
-    @GetMapping("/articles/recommend")
+    @GetMapping("/recommend")
     public ResponseEntity<Object> getUUIDArticlesByCategoriesResultTarget(@RequestParam(value = "category", required = true) String category, @RequestParam(value = "target", required = true) String target, Pageable pageable) {
         try {
             // mm:ss 형식의 target 쿼리스트링이 주어진 경우
@@ -179,7 +181,23 @@ public class ArticleController {
         }
     }
 
-    @PostMapping("/articles/like/{uuid}")
+    @GetMapping("/similarity/{uuid}")
+    public ResponseEntity<List<RecommendedArticle>> getSimilarArticles(@PathVariable String uuid) {
+        String flaskServerUrl = "http://localhost:8082/similarity/" + uuid;
+
+        // Flask 서버로부터 응답 받기
+        FlaskResponse flaskResponse = articleService.fetchFlaskResponse(flaskServerUrl);
+
+        // 응답이 있는 경우 유사한 기사 조회 메서드 호출
+        if (flaskResponse != null) {
+            List<RecommendedArticle> similarArticles = flaskResponse.getRecommendedArticles();
+            return ResponseEntity.ok(similarArticles);
+        } else {
+            // 응답이 없는 경우 404 응답 반환
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @PostMapping("/like/{uuid}")
     public ResponseEntity<String> likeArticle(@PathVariable UUID uuid, HttpSession session) {
         try {
             Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -196,7 +214,7 @@ public class ArticleController {
         }
     }
 
-    @GetMapping("/articles/like/{uuid}")
+    @GetMapping("/like/{uuid}")
     public ResponseEntity<Object> getLikeCount(@PathVariable UUID uuid, HttpSession session) {
         try {
             Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -213,7 +231,7 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/articles/like/{uuid}")
+    @DeleteMapping("/like/{uuid}")
     public ResponseEntity<String> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
         try {
             Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
@@ -232,7 +250,7 @@ public class ArticleController {
     }
 
 
-    @GetMapping("articles/like")
+    @GetMapping("/like")
     public ResponseEntity<Object> getLikedArticles(HttpSession session) {
         try {
             Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
