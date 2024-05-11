@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -59,9 +60,7 @@ public class ArticleController {
 
 
     @GetMapping("/articles")
-    public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString,
-                                                                           @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                           Pageable pageable) {
+    public ResponseEntity<Map<String, Object>> getUUIDArticlesByCategories(@RequestParam(value = "category", required = false) String categoryString, @RequestParam(value = "page", defaultValue = "0") int page, Pageable pageable) {
         // 쿼리스트링이 비어있는 경우 기본값 설정
         if (categoryString == null || categoryString.isEmpty()) {
             categoryString = ""; // 빈 문자열로 설정하여 아무 카테고리도 선택되지 않은 것으로 간주
@@ -139,10 +138,7 @@ public class ArticleController {
 
     // 추천 기사 조회
     @GetMapping("/articles/recommend")
-    public ResponseEntity<Object> getUUIDArticlesByCategoriesResultTarget(
-            @RequestParam(value = "category", required = true) String category,
-            @RequestParam(value = "target", required = true) String target,
-            Pageable pageable) {
+    public ResponseEntity<Object> getUUIDArticlesByCategoriesResultTarget(@RequestParam(value = "category", required = true) String category, @RequestParam(value = "target", required = true) String target, Pageable pageable) {
         try {
             // mm:ss 형식의 target 쿼리스트링이 주어진 경우
             log.info("target: {}", target);
@@ -185,53 +181,75 @@ public class ArticleController {
 
     @PostMapping("/articles/like/{uuid}")
     public ResponseEntity<String> likeArticle(@PathVariable UUID uuid, HttpSession session) {
-        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-        if (loginMember != null) {
-            Long memberId = loginMember.getId();
-            articleLikeService.likeArticle(uuid, memberId);
-            return ResponseEntity.ok("좋아요 완료");
-        } else {
-            // 로그인되지 않은 사용자에 대한 처리
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember != null) {
+                Long memberId = loginMember.getId();
+                articleLikeService.likeArticle(uuid, memberId);
+                return ResponseEntity.ok("좋아요 완료");
+            } else {
+                // 로그인되지 않은 사용자에 대한 처리
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
     }
 
     @GetMapping("/articles/like/{uuid}")
-    public ResponseEntity<LikeCountDto> getLikeCount(@PathVariable UUID uuid) {
-        LikeCountDto likeCountDto = articleLikeService.getLikeCount(uuid);
-
-        return ResponseEntity.ok(likeCountDto);
+    public ResponseEntity<Object> getLikeCount(@PathVariable UUID uuid, HttpSession session) {
+        try {
+            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember != null) {
+                Long memberId = loginMember.getId();
+                LikeCountDto likeCountDto = articleLikeService.getLikeCount(uuid, memberId);
+                return ResponseEntity.ok(likeCountDto);
+            } else {
+                // 로그인되지 않은 사용자에 대한 처리
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        }
     }
 
     @DeleteMapping("/articles/like/{uuid}")
     public ResponseEntity<String> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
-        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        try {
+            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
 
-        if (loginMember != null) {
-            Long memberId = loginMember.getId();
-            articleLikeService.cancelLikeArticle(uuid, memberId);
-            return ResponseEntity.ok("좋아요 삭제");
-        } else {
-            // 로그인되지 않은 사용자에 대한 처리
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            if (loginMember != null) {
+                Long memberId = loginMember.getId();
+                articleLikeService.cancelLikeArticle(uuid, memberId);
+                return ResponseEntity.ok("좋아요 취소 완료");
+            } else {
+                // 로그인되지 않은 사용자에 대한 처리
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
     }
 
 
-    @GetMapping("/likedArticles")
-    public ResponseEntity<LikedArticleDto> getLikedArticles(HttpSession session) {
-        Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+    @GetMapping("articles/like")
+    public ResponseEntity<Object> getLikedArticles(HttpSession session) {
+        try {
+            Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
 
-        List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
-        log.info("likedArticles: {}", likedArticles);
+            // 좋아요한 기사 엔티티를 리스트로 가져옴
+            List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
 
-        // UUIDArticle 엔티티 정보를 DTO로 변환
-        List<UUIDArticleListDto> uuidArticleListDtos = articleLikeService.entityToDto(likedArticles);
-        log.info("uuidArticleListDtos: {}", uuidArticleListDtos);
+            // UUIDArticle 엔티티 정보를 dto로 변환
+            List<UUIDArticleListDto> articleListDtos = articleLikeService.entityToDto(likedArticles);
 
-        LikedArticleDto likedArticleDto = new LikedArticleDto();
-        likedArticleDto.setLikedArticleList(uuidArticleListDtos);
+            // UUIDArticle 엔티티 정보를 dto로 변환
+            LikedArticleDto likedArticleDto = new LikedArticleDto();
+            likedArticleDto.setLikedArticleList(articleListDtos);
 
-        return ResponseEntity.ok(likedArticleDto);
+            return ResponseEntity.ok(likedArticleDto);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        }
     }
 }

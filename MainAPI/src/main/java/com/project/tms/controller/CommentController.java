@@ -71,31 +71,37 @@ public class CommentController {
     }
 
     @PutMapping("/{articleId}/{commentId}")
-    public ResponseEntity<Object> updateComment(@PathVariable("articleId") UUIDArticle articleId,
+    public ResponseEntity<Object> updateComment(@PathVariable("articleId") UUID uuid,
                                                 @PathVariable("commentId") Long commentId,
                                                 @RequestBody Comment updatedComment) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember != null) {
-                // 현재 로그인된 사용자 정보를 가져옴
+        try {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER); // 현재 로그인된 사용자 정보를 가져옴
 
-                // 댓글의 작성자 정보를 가져옴
-                CommentDto commentDto = commentService.getCommentDtoById(commentId);
-                if (commentDto != null && commentDto.getUserId().equals(loginMember.getId())) {
-                    // 현재 로그인된 사용자와 댓글의 작성자가 동일한 경우에만 수정을 허용
-                    CommentDto updatedCommentDto = commentService.updateComment(articleId, commentId, updatedComment);
-                    if (updatedCommentDto != null) {
-                        return ResponseEntity.ok(updatedCommentDto);
+                if (loginMember != null) {
+                    UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+                    // 댓글의 작성자 정보를 가져옴
+                    CommentDto commentDto = commentService.getCommentDtoById(commentId);
+
+                    if (commentDto != null && commentDto.getUserId().equals(loginMember.getId())) { // 현재 로그인된 사용자와 댓글의 작성자가 동일한 경우에만 수정을 허용
+                        CommentDto updatedCommentDto = commentService.updateComment(uuidArticle, commentId, updatedComment);
+                        if (updatedCommentDto != null) {
+                            return ResponseEntity.ok(updatedCommentDto);
+                        } else {
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 기사 id입니다.");
+                        }
                     } else {
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("댓글이 존재하지 않아 수정할 수 없습니다.");
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("댓글은 본인만 수정할 수 있습니다.");
                     }
-                } else {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("본인만 댓글을 수정할 수 있습니다.");
                 }
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
     }
 
 
