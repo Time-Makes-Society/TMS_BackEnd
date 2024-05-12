@@ -42,5 +42,32 @@ public class ReadTime {
     private LocalTime technology;
     private LocalTime world;
 
-    private String uuidArticleId;
+    public String getCategory() {
+        return category;
+    }
+
+    public LocalTime getCategoryValue() {
+        switch (this.category) {
+            case "culture":
+                return this.culture;
+            case "economy":
+                return this.economy;
+            case "entertain":
+                return this.entertain;
+            case "politics":
+                return this.politics;
+            case "science":
+                return this.science;
+            case "society":
+                return this.society;
+            case "sports":
+                return this.sports;
+            case "technology":
+                return this.technology;
+            case "world":
+                return this.world;
+            default:
+                return null; // 기본적으로 null을 반환하거나 다른 동작을 설정합니다.
+        }
+    }
 }

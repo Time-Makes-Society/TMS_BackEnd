@@ -9,16 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static com.querydsl.core.QueryModifiers.limit;
 
 @Service
 @Transactional(readOnly = true)
@@ -110,33 +102,87 @@ public class ReadTimeService {
         }
     }
 
+//    public ReadTimeCategoryDto getReadTimeByMemberId(Long memberId) {
+//        ReadTimeCategoryDto readTimeCategoryDto = new ReadTimeCategoryDto();
+//        List<ReadTime> readTimes = readTimeRepository.findByMemberId(memberId);
+//
+//        for (ReadTime readTime : readTimes) {
+//            if (readTime.getCategory().equals("culture")) {
+//                readTimeCategoryDto.setCulture(readTime.getCulture());
+//            } else if (readTime.getCategory().equals("economy")) {
+//                readTimeCategoryDto.setEconomy(readTime.getEconomy());
+//            } else if (readTime.getCategory().equals("entertain")) {
+//                readTimeCategoryDto.setEntertain(readTime.getEntertain());
+//            } else if (readTime.getCategory().equals("politics")) {
+//                readTimeCategoryDto.setPolitics(readTime.getPolitics());
+//            } else if (readTime.getCategory().equals("science")) {
+//                readTimeCategoryDto.setScience(readTime.getScience());
+//            } else if (readTime.getCategory().equals("society")) {
+//                readTimeCategoryDto.setSociety(readTime.getSociety());
+//            } else if (readTime.getCategory().equals("sports")) {
+//                readTimeCategoryDto.setSports(readTime.getSports());
+//            } else if (readTime.getCategory().equals("technology")) {
+//                readTimeCategoryDto.setTechnology(readTime.getTechnology());
+//            } else if (readTime.getCategory().equals("world")) {
+//                readTimeCategoryDto.setWorld(readTime.getWorld());
+//            }
+//        }
+//
+//        readTimeCategoryDto.setMemberId(memberId);
+//        return readTimeCategoryDto;
+//    }
+
+//    public ReadTimeCategoryDto getReadTimeByMemberId(Long memberId) {
+//        ReadTimeCategoryDto readTimeCategoryDto = new ReadTimeCategoryDto();
+//        List<ReadTime> readTimes = readTimeRepository.findByMemberId(memberId);
+//
+//        for (ReadTime readTime : readTimes) {
+//            readTimeCategoryDto.addCategoryTime(readTime.getCategory(), readTime.getReadTime());
+//        }
+//
+//        readTimeCategoryDto.setMemberId(memberId);
+//        return readTimeCategoryDto;
+//    }
+
     public ReadTimeCategoryDto getReadTimeByMemberId(Long memberId) {
-        ReadTimeCategoryDto readTimeCategoryDto = new ReadTimeCategoryDto();
         List<ReadTime> readTimes = readTimeRepository.findByMemberId(memberId);
+        ReadTimeCategoryDto readTimeCategoryDto = new ReadTimeCategoryDto();
 
         for (ReadTime readTime : readTimes) {
-            if (readTime.getCategory().equals("culture")) {
-                readTimeCategoryDto.setCulture(readTime.getCulture());
-            } else if (readTime.getCategory().equals("economy")) {
-                readTimeCategoryDto.setEconomy(readTime.getEconomy());
-            } else if (readTime.getCategory().equals("entertain")) {
-                readTimeCategoryDto.setEntertain(readTime.getEntertain());
-            } else if (readTime.getCategory().equals("politics")) {
-                readTimeCategoryDto.setPolitics(readTime.getPolitics());
-            } else if (readTime.getCategory().equals("science")) {
-                readTimeCategoryDto.setScience(readTime.getScience());
-            } else if (readTime.getCategory().equals("society")) {
-                readTimeCategoryDto.setSociety(readTime.getSociety());
-            } else if (readTime.getCategory().equals("sports")) {
-                readTimeCategoryDto.setSports(readTime.getSports());
-            } else if (readTime.getCategory().equals("technology")) {
-                readTimeCategoryDto.setTechnology(readTime.getTechnology());
-            } else if (readTime.getCategory().equals("world")) {
-                readTimeCategoryDto.setWorld(readTime.getWorld());
-            }
+            readTimeCategoryDto.addCategoryTime(readTime.getCategory(), readTime.getReadTime());
         }
 
         readTimeCategoryDto.setMemberId(memberId);
         return readTimeCategoryDto;
     }
+
+
+    public List<ReadTime> getReadTimesByMemberId(Long memberId) {
+        return readTimeRepository.findByMemberId(memberId);
+    }
+
+
+
+
+//    @Transactional
+//    public void saveReadArticle(ReadArticleDto readArticleDto) {
+//        // memberId에 해당하는 Member 엔티티를 가져옴
+//        Member member = memberRepository.findById(readArticleDto.getMemberId())
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid memberId: " + readArticleDto.getMemberId()));
+//
+//        // ReadTime 엔티티 생성 및 설정
+//        ReadTime readTime = new ReadTime();
+//        readTime.setMember(member);
+//        readTime.setUuidArticleId(readArticleDto.getUuidArticleId());
+//
+//        readTimeRepository.save(readTime);
+//    }
+
+//    public List<String> getUuidArticleIdsByMemberId(Long memberId) {
+//        // 멤버 아이디에 해당하는 모든 읽은 기사의 uuidArticleId를 조회
+//        List<ReadTime> readTimes = readTimeRepository.findByMemberId(memberId);
+//        return readTimes.stream()
+//                .map(ReadTime::getUuidArticleId)
+//                .collect(Collectors.toList());
+//    }
 }
