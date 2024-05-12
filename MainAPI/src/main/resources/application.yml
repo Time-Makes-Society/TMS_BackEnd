@@ -10,14 +10,16 @@ spring:
       #    password: tmdcks6502
 
       #    박혜정 local
-      #    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
-      #    username: root
-      #    password: 3516
+    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
+    username: root
+    password: 3516
+
 
     #    김승찬 local
     url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
     username: root
     password: Tmdcks6502@
+
 
   #  jpa:
   #    properties:

@@ -70,7 +70,13 @@ public class LoginController {
             // 로그인 성공 시 응답 생성
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("status", HttpStatus.OK.value());
-            responseBody.put("data", loginMember); // 로그인 멤버의 정보를 넣어줍니다.
+            responseBody.put("id", loginMember.getId());
+            responseBody.put("loginId", loginMember.getLoginId());
+            responseBody.put("memberName", loginMember.getMemberName());
+            responseBody.put("memberNickName", loginMember.getMemberNickname());
+            responseBody.put("totalReadTime", loginMember.getTotalReadTime());
+
+//            responseBody.put("data", loginMember); // 로그인 멤버의 정보를 넣어줍니다.
             responseBody.put("message", "로그인 성공");
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {

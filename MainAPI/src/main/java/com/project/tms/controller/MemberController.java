@@ -96,7 +96,6 @@ public class MemberController {
 //
 //        return ResponseEntity.ok("Tags selected successfully");
 //    }
-
     @PostMapping("/{memberId}/tag")
     public ResponseEntity<Map<String, Object>> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -204,17 +203,62 @@ public class MemberController {
 //        return ResponseEntity.ok("읽기 시간이 추가되었습니다.");
 //    }
 
+//    @PostMapping("/readTime")
+//    public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
+//        try {
+//            memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
+//
+//            Map<String, Object> responseBody = new HashMap<>();
+//            responseBody.put("status", HttpStatus.OK.value());
+//            responseBody.put("message", "읽기 시간이 추가되었습니다.");
+//
+//            return ResponseEntity.ok(responseBody);
+//        } catch (Exception e) {
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+//            errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(errorResponse);
+//        }
+//    }
+//
+//    @PostMapping("/readTime")
+//    public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
+//        try {
+//            // MemberService에서는 ReadTime 엔티티를 생성하여 저장하는 메서드를 호출하도록 변경
+//            memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
+//
+//            Map<String, Object> responseBody = new HashMap<>();
+//            responseBody.put("status", HttpStatus.OK.value());
+//            responseBody.put("message", "읽기 시간이 추가되었습니다.");
+//
+//            return ResponseEntity.ok(responseBody);
+//        } catch (Exception e) {
+//            Map<String, Object> errorResponse = new HashMap<>();
+//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+//            errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(errorResponse);
+//        }
+//    }
+
+
     @PostMapping("/readTime")
     public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
         try {
+            // 서비스 메서드를 호출하여 엔티티에 저장
             memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
 
+            // 응답 생성
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("status", HttpStatus.OK.value());
             responseBody.put("message", "읽기 시간이 추가되었습니다.");
 
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
+            // 오류 응답 생성
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
             errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");

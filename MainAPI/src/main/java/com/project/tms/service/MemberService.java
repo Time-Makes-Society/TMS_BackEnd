@@ -155,6 +155,8 @@ public class MemberService {
         member.addReadTime(readTime);
         memberRepository.save(member);
     }
+
+
 //
 //    @Transactional
 //    public void addReadTimeToCategory(Long memberId, String category, LocalTime readTime) {
