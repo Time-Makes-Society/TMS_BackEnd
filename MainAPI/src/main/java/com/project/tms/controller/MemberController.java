@@ -137,23 +137,23 @@ public class MemberController {
 
         switch (tagId.intValue()) {
             case 1:
-                return "CULTURE";
+                return "문화";
             case 2:
-                return "ECONOMY";
+                return "경제";
             case 3:
-                return "ENTERTAIN";
+                return "연예";
             case 4:
-                return "POLITICS";
+                return "정치";
             case 5:
-                return "SCIENCE";
+                return "과학";
             case 6:
-                return "SOCIETY";
+                return "사회";
             case 7:
-                return "SPORTS";
+                return "스포츠";
             case 8:
-                return "TECHNOLOGY";
+                return "기술";
             case 9:
-                return "WORLD";
+                return "해외";
             default:
                 return null;
         }

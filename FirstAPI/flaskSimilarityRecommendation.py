@@ -128,8 +128,14 @@ def recommend_similar_articles(base_embedding):
         return similar_articles[:5]  # 상위 5개 기사만 반환
     else:
         # 유사한 기사가 없으면 현재 데이터 중에서 가장 유사한 기사 반환
+        # most_similar_article = max(
+        #     articles, key=lambda x: cosine(json.loads(base_embedding), json.loads(x[2]))
+        # )
         most_similar_article = max(
-            articles, key=lambda x: cosine(json.loads(base_embedding), json.loads(x[2]))
+            articles,
+            key=lambda x: cosine(
+                json.loads(base_embedding), np.array(json.loads(x[2]))
+            ),
         )
         return [(most_similar_article[1], 1.0)]  # title, similarity를 함께 반환
 
