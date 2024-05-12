@@ -35,8 +35,8 @@ db = pymysql.connect(
     host="localhost",
     port=3306,
     user="root",
-    password="3516",
-    db="tms",
+    password="Tmdcks6502@",
+    db="TMSDB",
     charset="utf8",
 )
 

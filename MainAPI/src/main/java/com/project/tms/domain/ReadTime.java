@@ -11,10 +11,12 @@ import java.time.LocalTime;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class ReadTime {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
 
     @ManyToOne(fetch = LAZY)
@@ -42,29 +44,26 @@ public class ReadTime {
     private LocalTime technology;
     private LocalTime world;
 
-    public String getCategory() {
-        return category;
-    }
 
     public LocalTime getCategoryValue() {
         switch (this.category) {
-            case "culture":
+            case "문화":
                 return this.culture;
-            case "economy":
+            case "경제":
                 return this.economy;
-            case "entertain":
+            case "연예":
                 return this.entertain;
-            case "politics":
+            case "정치":
                 return this.politics;
-            case "science":
+            case "과학":
                 return this.science;
-            case "society":
+            case "사회":
                 return this.society;
-            case "sports":
+            case "스포츠":
                 return this.sports;
-            case "technology":
+            case "기술":
                 return this.technology;
-            case "world":
+            case "해외":
                 return this.world;
             default:
                 return null; // 기본적으로 null을 반환하거나 다른 동작을 설정합니다.

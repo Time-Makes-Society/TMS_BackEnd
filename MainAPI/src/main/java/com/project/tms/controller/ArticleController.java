@@ -183,8 +183,8 @@ public class ArticleController {
 
     @GetMapping("/similarity/{uuid}")
     public ResponseEntity<List<RecommendedArticle>> getSimilarArticles(@PathVariable String uuid) {
-//        String flaskServerUrl = "http://localhost:8082/similarity/" + uuid;
-        String flaskServerUrl = "https://2pikxq09x2.execute-api.ap-northeast-2.amazonaws.com/dev/similarity/" + uuid;
+        String flaskServerUrl = "http://localhost:8082/similarity/" + uuid;
+//        String flaskServerUrl = "https://2pikxq09x2.execute-api.ap-northeast-2.amazonaws.com/dev/similarity/" + uuid;
 
         // Flask 서버로부터 응답 받기
         FlaskResponse flaskResponse = articleService.fetchFlaskResponse(flaskServerUrl);

@@ -86,31 +86,31 @@ public class ReadTimeController {
             String category = readTime.getCategory();
             Long totalTime = categoryTotalTime.getOrDefault(category, 0L);
             switch (category) {
-                case "culture":
+                case "문화":
                     totalTime += readTime.getCulture().toSecondOfDay();
                     break;
-                case "economy":
+                case "경제":
                     totalTime += readTime.getEconomy().toSecondOfDay();
                     break;
-                case "entertain":
+                case "연예":
                     totalTime += readTime.getEntertain().toSecondOfDay();
                     break;
-                case "politics":
+                case "정치":
                     totalTime += readTime.getPolitics().toSecondOfDay();
                     break;
-                case "science":
+                case "과학":
                     totalTime += readTime.getScience().toSecondOfDay();
                     break;
-                case "society":
+                case "사회":
                     totalTime += readTime.getSociety().toSecondOfDay();
                     break;
-                case "sports":
+                case "스포츠":
                     totalTime += readTime.getSports().toSecondOfDay();
                     break;
-                case "technology":
+                case "기술":
                     totalTime += readTime.getTechnology().toSecondOfDay();
                     break;
-                case "world":
+                case "해외":
                     totalTime += readTime.getWorld().toSecondOfDay();
                     break;
             }
