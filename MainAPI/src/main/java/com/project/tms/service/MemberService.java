@@ -123,23 +123,23 @@ public class MemberService {
 
     private Long findTagIdByName(String tagName) {
         switch (tagName) {
-            case "CULTURE":
+            case "문화":
                 return 1L;
-            case "ECONOMY":
+            case "경제":
                 return 2L;
-            case "ENTERTAIN":
+            case "연예":
                 return 3L;
-            case "POLITICS":
+            case "정치":
                 return 4L;
-            case "SCIENCE":
+            case "과학":
                 return 5L;
-            case "SOCIETY":
+            case "사회":
                 return 6L;
-            case "SPORTS":
+            case "스포츠":
                 return 7L;
-            case "TECHNOLOGY":
+            case "기술":
                 return 8L;
-            case "WORLD":
+            case "해외":
                 return 9L;
             default:
                 return null;

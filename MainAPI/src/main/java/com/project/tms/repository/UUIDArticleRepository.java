@@ -19,8 +19,9 @@ public interface UUIDArticleRepository extends JpaRepository<UUIDArticle, UUID> 
 
     List<UUIDArticle> findByTitle(String title);
 
-    @Query("SELECT a FROM UUIDArticle a WHERE a.category IN :categories")
-    List<UUIDArticle> findByCategoryIn(@Param("categories") String[] categories);
-
     List<UUIDArticle> findByCategoryInOrderByArticleTimeAsc(String[] categories);
+
+    long countByCategoryIn(List<String> categories);
+
+
 }

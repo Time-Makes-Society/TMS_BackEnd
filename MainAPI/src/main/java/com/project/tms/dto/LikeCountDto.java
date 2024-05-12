@@ -9,4 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LikeCountDto {
     private Long likeCount;
+
+    private boolean liked;
 }

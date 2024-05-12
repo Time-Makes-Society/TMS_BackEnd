@@ -31,31 +31,31 @@ public class ReadTimeService {
         if (existingReadTime != null) {
             // 이미 해당 카테고리에 대한 읽은 시간이 존재하면 업데이트
             switch (category) {
-                case "culture":
+                case "문화":
                     existingReadTime.setCulture(existingReadTime.getCulture().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "economy":
+                case "경제":
                     existingReadTime.setEconomy(existingReadTime.getEconomy().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "entertain":
+                case "연예":
                     existingReadTime.setEntertain(existingReadTime.getEntertain().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "politics":
+                case "정치":
                     existingReadTime.setPolitics(existingReadTime.getPolitics().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "science":
+                case "과학":
                     existingReadTime.setScience(existingReadTime.getScience().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "society":
+                case "사회":
                     existingReadTime.setSociety(existingReadTime.getSociety().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "sports":
+                case "스포츠":
                     existingReadTime.setSports(existingReadTime.getSports().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "technology":
+                case "기술":
                     existingReadTime.setTechnology(existingReadTime.getTechnology().plusSeconds(readTime.toSecondOfDay()));
                     break;
-                case "world":
+                case "해외":
                     existingReadTime.setWorld(existingReadTime.getWorld().plusSeconds(readTime.toSecondOfDay()));
                     break;
                 default:
@@ -68,31 +68,31 @@ public class ReadTimeService {
             newReadTime.setMember(member);
             newReadTime.setCategory(category);
             switch (category) {
-                case "culture":
+                case "문화":
                     newReadTime.setCulture(readTime);
                     break;
-                case "economy":
+                case "경제":
                     newReadTime.setEconomy(readTime);
                     break;
-                case "entertain":
+                case "연예":
                     newReadTime.setEntertain(readTime);
                     break;
-                case "politics":
+                case "정치":
                     newReadTime.setPolitics(readTime);
                     break;
-                case "science":
+                case "과학":
                     newReadTime.setScience(readTime);
                     break;
-                case "society":
+                case "사회":
                     newReadTime.setSociety(readTime);
                     break;
-                case "sports":
+                case "스포츠":
                     newReadTime.setSports(readTime);
                     break;
-                case "technology":
+                case "기술":
                     newReadTime.setTechnology(readTime);
                     break;
-                case "world":
+                case "해외":
                     newReadTime.setWorld(readTime);
                     break;
                 default:

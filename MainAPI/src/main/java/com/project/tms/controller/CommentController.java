@@ -5,76 +5,103 @@ import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.CommentDto;
 import com.project.tms.dto.MemberDto;
+import com.project.tms.service.ArticleService;
 import com.project.tms.service.CommentService;
 import com.project.tms.web.login.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/comment")
+@RequiredArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
-    @Autowired
-    private HttpServletRequest request;
+    private final ArticleService articleService;
+
+    private final HttpServletRequest request;
+
 
     @PostMapping("/{articleId}")
-    public ResponseEntity<String> addCommentToArticle(@PathVariable("articleId") UUIDArticle articleId,
+    public ResponseEntity<String> addCommentToArticle(@PathVariable("articleId") UUID uuid,
                                                       @RequestBody Comment comment) {
         try {
+            UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+            if (uuidArticle == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("존재하지 않은 기사 id입니다.");
+            }
+
             Long userId = ((Member) request.getSession().getAttribute(SessionConst.LOGIN_MEMBER)).getId();
-            commentService.addCommentToArticle(articleId, comment, userId);
+            commentService.addCommentToArticle(uuidArticle, comment, userId);
             return ResponseEntity.ok("댓글 작성이 완료되었습니다.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("댓글 작성 중 오류가 발생했습니다: " + e.toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
     @GetMapping("/{articleId}")
-    public ResponseEntity<List<CommentDto>> getCommentsByArticle(@PathVariable("articleId") UUIDArticle articleId) {
-        List<CommentDto> comments = commentService.getCommentsByArticle(articleId);
-        if (!comments.isEmpty()) {
-            return ResponseEntity.ok(comments);
-        } else { // 204 No Content 반환
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Object> getCommentsByArticle(@PathVariable("articleId") UUID uuid) {
+        try {
+            UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+            if (uuidArticle == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("존재하지 않은 기사 id입니다.");
+            }
+
+            List<CommentDto> comments = commentService.getCommentsByArticle(uuidArticle);
+
+            if (!comments.isEmpty()) {
+                return ResponseEntity.ok(comments);
+            } else { // 204 No Content 반환
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 
     @PutMapping("/{articleId}/{commentId}")
-    public ResponseEntity<Object> updateComment(@PathVariable("articleId") UUIDArticle articleId,
+    public ResponseEntity<Object> updateComment(@PathVariable("articleId") UUID uuid,
                                                 @PathVariable("commentId") Long commentId,
                                                 @RequestBody Comment updatedComment) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember != null) {
-                // 현재 로그인된 사용자 정보를 가져옴
+        try {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER); // 현재 로그인된 사용자 정보를 가져옴
 
-                // 댓글의 작성자 정보를 가져옴
-                CommentDto commentDto = commentService.getCommentDtoById(commentId);
-                if (commentDto != null && commentDto.getUserId().equals(loginMember.getId())) {
-                    // 현재 로그인된 사용자와 댓글의 작성자가 동일한 경우에만 수정을 허용
-                    CommentDto updatedCommentDto = commentService.updateComment(articleId, commentId, updatedComment);
-                    if (updatedCommentDto != null) {
-                        return ResponseEntity.ok(updatedCommentDto);
+                if (loginMember != null) {
+                    UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+
+                    // 댓글의 작성자 정보를 가져옴
+                    CommentDto commentDto = commentService.getCommentDtoById(commentId);
+
+                    if (commentDto != null && commentDto.getUserId().equals(loginMember.getId())) { // 현재 로그인된 사용자와 댓글의 작성자가 동일한 경우에만 수정을 허용
+                        CommentDto updatedCommentDto = commentService.updateComment(uuidArticle, commentId, updatedComment);
+                        if (updatedCommentDto != null) {
+                            return ResponseEntity.ok(updatedCommentDto);
+                        } else {
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 기사 id입니다.");
+                        }
                     } else {
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("댓글이 존재하지 않아 수정할 수 없습니다.");
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("댓글은 본인만 수정할 수 있습니다.");
                     }
-                } else {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("본인만 댓글을 수정할 수 있습니다.");
                 }
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
     }
 
 
