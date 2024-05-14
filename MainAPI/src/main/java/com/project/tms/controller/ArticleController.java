@@ -198,12 +198,11 @@ public class ArticleController {
             return ResponseEntity.notFound().build();
         }
     }
-    @PostMapping("/like/{uuid}")
-    public ResponseEntity<String> likeArticle(@PathVariable UUID uuid, HttpSession session) {
+
+    @PostMapping("/like/{uuid}/{memberId}")
+    public ResponseEntity<String> likeArticle(@PathVariable UUID uuid, @PathVariable Long memberId) {
         try {
-            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember != null) {
-                Long memberId = loginMember.getId();
+            if (memberId != null) {
                 articleLikeService.likeArticle(uuid, memberId);
                 return ResponseEntity.ok("좋아요 완료");
             } else {
@@ -215,12 +214,10 @@ public class ArticleController {
         }
     }
 
-    @GetMapping("/like/{uuid}")
-    public ResponseEntity<Object> getLikeCount(@PathVariable UUID uuid, HttpSession session) {
+    @GetMapping("/like/{uuid}/{memberId}")
+    public ResponseEntity<Object> getLikeCount(@PathVariable UUID uuid, @PathVariable Long memberId) {
         try {
-            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember != null) {
-                Long memberId = loginMember.getId();
+            if (memberId != null) {
                 LikeCountDto likeCountDto = articleLikeService.getLikeCount(uuid, memberId);
                 return ResponseEntity.ok(likeCountDto);
             } else {
@@ -232,13 +229,10 @@ public class ArticleController {
         }
     }
 
-    @DeleteMapping("/like/{uuid}")
-    public ResponseEntity<String> cancelLikeArticle(@PathVariable UUID uuid, HttpSession session) {
+    @DeleteMapping("/like/{uuid}/{memberId}")
+    public ResponseEntity<String> cancelLikeArticle(@PathVariable UUID uuid, @PathVariable Long memberId) {
         try {
-            Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-
-            if (loginMember != null) {
-                Long memberId = loginMember.getId();
+            if (memberId != null) {
                 articleLikeService.cancelLikeArticle(uuid, memberId);
                 return ResponseEntity.ok("좋아요 취소 완료");
             } else {
@@ -260,7 +254,7 @@ public class ArticleController {
             List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
 
             // UUIDArticle 엔티티 정보를 dto로 변환
-            List<UUIDArticleListDto> articleListDtos = articleLikeService.entityToDto(likedArticles);
+            List<UUIDArticleListDto> articleListDtos = articleLikeService.entityToLikedArticleDto(likedArticles);
 
             // UUIDArticle 엔티티 정보를 dto로 변환
             LikedArticleDto likedArticleDto = new LikedArticleDto();

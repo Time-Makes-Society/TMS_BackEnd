@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
+@Entity
+@Table(name = "ArticleLike", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uuid_id", "member_id"})
+})
 public class ArticleLike {
 
     @Id
