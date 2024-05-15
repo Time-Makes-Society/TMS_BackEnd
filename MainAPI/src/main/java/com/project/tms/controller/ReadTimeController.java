@@ -53,19 +53,32 @@ public class ReadTimeController {
     public ResponseEntity<Map<String, Object>> getReadTimeByMemberId(@PathVariable Long memberId) {
         Map<String, Object> responseBody = new HashMap<>();
 
-        // 해당 memberId의 ReadTime 엔티티를 가져옵니다.
         List<ReadTime> readTimes = readTimeService.getReadTimesByMemberId(memberId);
 
-        // 각 카테고리에 대한 읽은 시간을 responseBody에 추가합니다.
+        Set<String> allCategories = new HashSet<>(Arrays.asList("문화", "경제", "연예", "정치", "과학", "사회", "스포츠", "기술", "해외"));
+
         List<Map<String, Object>> categories = new ArrayList<>();
-        for (ReadTime readTime : readTimes) {
-            Map<String, Object> categoryMap = new HashMap<>();
-            categoryMap.put("category", readTime.getCategory());
-            categoryMap.put("time", readTime.getCategory() != null ? readTime.getCategoryValue() : null);
-            categories.add(categoryMap);
+        for (String category : allCategories) {
+            boolean found = false;
+            for (ReadTime readTime : readTimes) {
+                if (category.equals(readTime.getCategory())) {
+                    Map<String, Object> categoryMap = new HashMap<>();
+                    categoryMap.put("category", readTime.getCategory());
+                    categoryMap.put("time", readTime.getCategoryValue());
+                    categories.add(categoryMap);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                Map<String, Object> categoryMap = new HashMap<>();
+                categoryMap.put("category", category);
+                categoryMap.put("time", "00:00:00");
+                categories.add(categoryMap);
+            }
         }
 
-        // memberId 정보를 추가합니다.
         responseBody.put("memberId", memberId);
         responseBody.put("data", categories);
 

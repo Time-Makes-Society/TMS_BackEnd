@@ -6,6 +6,7 @@ import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.*;
 import com.project.tms.dto.flask.FlaskResponse;
+import com.project.tms.dto.flask.RecommendArticleDto;
 import com.project.tms.dto.flask.RecommendedArticle;
 import com.project.tms.service.ArticleLikeService;
 import com.project.tms.service.ArticleService;
@@ -47,8 +48,8 @@ public class ArticleController {
 
         // Flask 서버 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
-        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
-//        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
+//        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
+        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
         articleService.sendGetRequestToFlask(flaksServerUrl);
 
         // 모든 pre_news에 있는 데이터를 가져옴
@@ -181,7 +182,7 @@ public class ArticleController {
         }
     }
 
-    @GetMapping("/similarity/{uuid}")
+    /*@GetMapping("/similarity/{uuid}")
     public ResponseEntity<List<RecommendedArticle>> getSimilarArticles(@PathVariable String uuid) {
         String flaskServerUrl = "http://localhost:8082/similarity/" + uuid;
 //        String flaskServerUrl = "https://2pikxq09x2.execute-api.ap-northeast-2.amazonaws.com/dev/similarity/" + uuid;
@@ -195,6 +196,20 @@ public class ArticleController {
             return ResponseEntity.ok(similarArticles);
         } else {
             // 응답이 없는 경우 404 응답 반환
+            return ResponseEntity.notFound().build();
+        }
+    }*/
+
+    @GetMapping("/similarity/{uuid}")
+    public ResponseEntity<List<RecommendArticleDto>> getSimilarArticles(@PathVariable String uuid) {
+//        String flaskServerUrl = "http://localhost:8082/similarity/" + uuid;
+        String flaskServerUrl = "https://2pikxq09x2.execute-api.ap-northeast-2.amazonaws.com/dev/similarity/" + uuid;
+
+        List<RecommendArticleDto> similarArticles = articleService.fetchAndMapArticles(flaskServerUrl);
+
+        if (similarArticles != null && !similarArticles.isEmpty()) {
+            return ResponseEntity.ok(similarArticles);
+        } else {
             return ResponseEntity.notFound().build();
         }
     }

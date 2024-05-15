@@ -6,6 +6,7 @@ import com.project.tms.dto.SilmilarityDto;
 import com.project.tms.dto.flask.FlaskResponse;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.UUIDArticleListDto;
+import com.project.tms.dto.flask.RecommendArticleDto;
 import com.project.tms.dto.flask.RecommendedArticle;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
@@ -224,9 +225,54 @@ public class ArticleService {
     }
 
     // 플라스크에서 유사도를 계산하여 유사한 기사를 반환받는 메서드
-    public FlaskResponse fetchFlaskResponse(String url) {
+    /*public FlaskResponse fetchFlaskResponse(String url) {
         try {
             // Flask 서버에 GET 요청 보내고 응답 받기
+            ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return responseEntity.getBody();
+            } else {
+                log.error("GET 요청 실패: {}", responseEntity.getStatusCodeValue());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("GET 요청 실패:", e);
+            return null;
+        }
+    }*/
+
+    public List<RecommendArticleDto> fetchAndMapArticles(String url) {
+        FlaskResponse flaskResponse = fetchFlaskResponse(url);
+        if (flaskResponse == null) {
+            return null;
+        }
+
+        return flaskResponse.getRecommendedArticles().stream()
+                .map(recommendedArticle -> {
+                    UUIDArticle article = uuidArticleRepository.findById(recommendedArticle.getUuid()).orElse(null);
+                    if (article == null) {
+                        return null;
+                    }
+
+                    // similarity 값을 변환하여 문자열로 포맷팅
+                    String similarityPercentage = String.format("%d%%", (int) (recommendedArticle.getSimilarity() * 100));
+
+                    return new RecommendArticleDto(
+                            article.getId(),
+                            article.getTitle(),
+                            article.getCategory(),
+                            article.getImage(),
+                            article.getPublisher(),
+                            article.getArticleTime(),
+                            article.getCreatedDate(),
+                            similarityPercentage
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    private FlaskResponse fetchFlaskResponse(String url) {
+        try {
             ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 return responseEntity.getBody();
