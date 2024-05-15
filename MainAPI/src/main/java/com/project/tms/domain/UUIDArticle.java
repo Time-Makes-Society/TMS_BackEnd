@@ -43,6 +43,18 @@ public class UUIDArticle {
     @Column(nullable = false)
     private Long likeCount = 0L; // 좋아요 수 필드 추가 및 초기값 설정
 
-    @OneToMany(mappedBy = "uuidArticle")
+//    @OneToMany(mappedBy = "uuidArticle")
+    @OneToMany(mappedBy = "uuidArticle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticleLike> likedByMembers = new ArrayList<>();
+
+    public void addLike(ArticleLike like) {
+        likedByMembers.add(like);
+        like.setUuidArticle(this);
+    }
+
+    public void removeLike(ArticleLike like) {
+        likedByMembers.remove(like);
+        like.setUuidArticle(null);
+    }
+
 }

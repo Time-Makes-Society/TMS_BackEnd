@@ -24,6 +24,6 @@ public class ArticleLike {
     @JoinColumn(name = "uuid_id")
     private UUIDArticle uuidArticle;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private boolean liked; // 좋아요 여부를 나타내는 boolean 필드
 }

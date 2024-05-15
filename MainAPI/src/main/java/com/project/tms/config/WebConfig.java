@@ -1,3 +1,4 @@
+/*
 package com.project.tms.config;
 
 import org.springframework.stereotype.Component;
@@ -14,5 +15,33 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE") // 허용할 HTTP 메서드
                 .allowedHeaders("*") // 허용할 헤더
                 .allowCredentials(true); // 쿠키 사용 허용
+    }
+}
+*/
+
+package com.project.tms.config;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Component("webConfiguration")
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        WebMvcConfigurer.super.addCorsMappings(registry);
+
+        registry.addMapping("/**")
+                .allowedOrigins(
+                        "https://heartfelt-baklava-2f7a5f.netlify.app",
+                        "https://timemakessociety.vercel.app",
+                        "http://localhost:3000",
+                        "http://localhost:5173"
+                )
+                .allowedMethods("GET", "POST", "DELETE", "PUT", "HEAD", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("Authorization")
+                .allowCredentials(true);
     }
 }

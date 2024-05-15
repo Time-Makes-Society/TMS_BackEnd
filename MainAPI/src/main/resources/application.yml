@@ -4,7 +4,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-      #    RDS
+#    RDS
 #    url: jdbc:mysql://tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com:3306/TMSDB
 #    username: kscold
 #    password: tmdcks6502

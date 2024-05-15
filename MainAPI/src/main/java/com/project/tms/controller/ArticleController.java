@@ -245,13 +245,11 @@ public class ArticleController {
     }
 
 
-    @GetMapping("/like")
-    public ResponseEntity<Object> getLikedArticles(HttpSession session) {
+    @GetMapping("/like/{memberId}")
+    public ResponseEntity<Object> getLikedArticles(@PathVariable Long memberId) {
         try {
-            Member member = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
-
             // 좋아요한 기사 엔티티를 리스트로 가져옴
-            List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(member.getId());
+            List<UUIDArticle> likedArticles = articleLikeService.getLikedArticlesByMemberId(memberId);
 
             // UUIDArticle 엔티티 정보를 dto로 변환
             List<UUIDArticleListDto> articleListDtos = articleLikeService.entityToLikedArticleDto(likedArticles);

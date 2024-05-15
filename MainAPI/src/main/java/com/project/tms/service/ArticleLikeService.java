@@ -32,7 +32,7 @@ public class ArticleLikeService {
 
     private final ArticleLikeRepository articleLikeRepository;
 
-    public void likeArticle(UUID uuid, Long memberId) {
+   /* public void likeArticle(UUID uuid, Long memberId) {
         UUIDArticle article = uuidArticleRepository.findById(uuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 기사 아이디입니다.: " + uuid));
 
@@ -65,6 +65,48 @@ public class ArticleLikeService {
 
         article.setLikeCount(article.getLikeCount() != null && article.getLikeCount() > 0 ? article.getLikeCount() - 1 : 0);
         uuidArticleRepository.save(article);
+    }*/
+
+    public void likeArticle(UUID uuid, Long memberId) {
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 기사 아이디입니다.: " + uuid));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 아이디입니다.: " + memberId));
+
+        Optional<ArticleLike> existingLike = articleLikeRepository.findByUuidArticleIdAndMemberId(article.getId(), memberId);
+        if (existingLike.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 좋아요한 기사입니다.");
+        }
+
+        ArticleLike articleLike = new ArticleLike();
+        articleLike.setUuidArticle(article);
+        articleLike.setMember(member);
+        articleLike.setLiked(true);
+        article.addLike(articleLike);
+        articleLikeRepository.save(articleLike);
+
+        article.setLikeCount(article.getLikeCount() != null ? article.getLikeCount() + 1 : 1);
+        uuidArticleRepository.save(article);
+    }
+
+    public void cancelLikeArticle(UUID uuid, Long memberId) {
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 기사 아이디입니다.: " + uuid));
+
+        ArticleLike articleLike = articleLikeRepository.findByUuidArticleIdAndMemberId(article.getId(), memberId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 좋아요가 취소된 기사입니다."));
+
+        article.removeLike(articleLike);
+        articleLikeRepository.delete(articleLike);
+
+        article.setLikeCount(article.getLikeCount() != null && article.getLikeCount() > 0 ? article.getLikeCount() - 1 : 0);
+        uuidArticleRepository.save(article);
+    }
+
+    private boolean isMemberLikedArticle(UUIDArticle article, Long memberId) {
+        return article.getLikedByMembers().stream()
+                .anyMatch(like -> like.getMember().getId().equals(memberId));
     }
 
     public LikeCountDto getLikeCount(UUID uuid, Long memberId) {
@@ -112,8 +154,8 @@ public class ArticleLikeService {
     }
 
 
-    private boolean isMemberLikedArticle(UUIDArticle article, Long memberId) {
+  /*  private boolean isMemberLikedArticle(UUIDArticle article, Long memberId) {
         return article.getLikedByMembers().stream()
                 .anyMatch(member -> member.getId().equals(memberId));
-    }
+    }*/
 }
