@@ -96,7 +96,7 @@ public class ReadTimeController {
                 categories.add(categoryMap);
             }
         }
-        
+
         responseBody.put("memberId", memberId);
         responseBody.put("data", categories);
 
@@ -105,6 +105,80 @@ public class ReadTimeController {
 
 
 
+
+//    @GetMapping("/topCategories/{memberId}")
+//    public ResponseEntity<Map<String, Object>> getTopCategoriesPercentage(@PathVariable Long memberId) {
+//        Map<String, Object> responseBody = new HashMap<>();
+//
+//        // 해당 memberId의 ReadTime 엔티티를 가져옵니다.
+//        List<ReadTime> readTimes = readTimeService.getReadTimesByMemberId(memberId);
+//
+//        // 각 카테고리의 총 읽은 시간을 계산합니다.
+//        Map<String, Long> categoryTotalTime = new HashMap<>();
+//        for (ReadTime readTime : readTimes) {
+//            String category = readTime.getCategory();
+//            Long totalTime = categoryTotalTime.getOrDefault(category, 0L);
+//            switch (category) {
+//                case "문화":
+//                    totalTime += readTime.getCulture().toSecondOfDay();
+//                    break;
+//                case "경제":
+//                    totalTime += readTime.getEconomy().toSecondOfDay();
+//                    break;
+//                case "연예":
+//                    totalTime += readTime.getEntertain().toSecondOfDay();
+//                    break;
+//                case "정치":
+//                    totalTime += readTime.getPolitics().toSecondOfDay();
+//                    break;
+//                case "과학":
+//                    totalTime += readTime.getScience().toSecondOfDay();
+//                    break;
+//                case "사회":
+//                    totalTime += readTime.getSociety().toSecondOfDay();
+//                    break;
+//                case "스포츠":
+//                    totalTime += readTime.getSports().toSecondOfDay();
+//                    break;
+//                case "기술":
+//                    totalTime += readTime.getTechnology().toSecondOfDay();
+//                    break;
+//                case "해외":
+//                    totalTime += readTime.getWorld().toSecondOfDay();
+//                    break;
+//            }
+//            categoryTotalTime.put(category, totalTime);
+//        }
+//
+//        // 총 읽은 시간을 기준으로 백분율을 계산합니다.
+//        long totalReadTime = categoryTotalTime.values().stream().mapToLong(Long::longValue).sum();
+//        Map<String, Integer> categoryPercentages = new HashMap<>();
+//        for (Map.Entry<String, Long> entry : categoryTotalTime.entrySet()) {
+//            int percentage = (int) Math.round((double) entry.getValue() / totalReadTime * 100.0);
+//            categoryPercentages.put(entry.getKey(), percentage);
+//        }
+//
+//        // 백분율이 높은 상위 4개의 카테고리를 선택합니다.
+//        List<Map.Entry<String, Integer>> sortedPercentages = categoryPercentages.entrySet().stream()
+//                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+//                .limit(4)
+//                .collect(Collectors.toList());
+//
+//        // 결과를 responseBody에 추가합니다.
+//        List<Map<String, Object>> topCategories = new ArrayList<>();
+//        for (Map.Entry<String, Integer> entry : sortedPercentages) {
+//            Map<String, Object> categoryMap = new HashMap<>();
+//            categoryMap.put("category", entry.getKey());
+//            categoryMap.put("percentage", entry.getValue());
+//            topCategories.add(categoryMap);
+//        }
+//
+//        // memberId 정보를 추가합니다.
+//        responseBody.put("memberId", memberId);
+//        responseBody.put("topCategories", topCategories);
+//
+//        return ResponseEntity.ok(responseBody);
+//    }
 
     @GetMapping("/topCategories/{memberId}")
     public ResponseEntity<Map<String, Object>> getTopCategoriesPercentage(@PathVariable Long memberId) {
@@ -117,34 +191,34 @@ public class ReadTimeController {
         Map<String, Long> categoryTotalTime = new HashMap<>();
         for (ReadTime readTime : readTimes) {
             String category = readTime.getCategory();
-            Long totalTime = categoryTotalTime.getOrDefault(category, 0L);
+            long totalTime = 0;
             switch (category) {
                 case "문화":
-                    totalTime += readTime.getCulture().toSecondOfDay();
+                    totalTime = readTime.getCulture().toSecondOfDay();
                     break;
                 case "경제":
-                    totalTime += readTime.getEconomy().toSecondOfDay();
+                    totalTime = readTime.getEconomy().toSecondOfDay();
                     break;
                 case "연예":
-                    totalTime += readTime.getEntertain().toSecondOfDay();
+                    totalTime = readTime.getEntertain().toSecondOfDay();
                     break;
                 case "정치":
-                    totalTime += readTime.getPolitics().toSecondOfDay();
+                    totalTime = readTime.getPolitics().toSecondOfDay();
                     break;
                 case "과학":
-                    totalTime += readTime.getScience().toSecondOfDay();
+                    totalTime = readTime.getScience().toSecondOfDay();
                     break;
                 case "사회":
-                    totalTime += readTime.getSociety().toSecondOfDay();
+                    totalTime = readTime.getSociety().toSecondOfDay();
                     break;
                 case "스포츠":
-                    totalTime += readTime.getSports().toSecondOfDay();
+                    totalTime = readTime.getSports().toSecondOfDay();
                     break;
                 case "기술":
-                    totalTime += readTime.getTechnology().toSecondOfDay();
+                    totalTime = readTime.getTechnology().toSecondOfDay();
                     break;
                 case "해외":
-                    totalTime += readTime.getWorld().toSecondOfDay();
+                    totalTime = readTime.getWorld().toSecondOfDay();
                     break;
             }
             categoryTotalTime.put(category, totalTime);
@@ -171,6 +245,14 @@ public class ReadTimeController {
             categoryMap.put("category", entry.getKey());
             categoryMap.put("percentage", entry.getValue());
             topCategories.add(categoryMap);
+        }
+
+        // 데이터가 4개 미만인 경우 나머지를 null로 채웁니다.
+        while (topCategories.size() < 4) {
+            Map<String, Object> nullCategoryMap = new HashMap<>();
+            nullCategoryMap.put("category", "null");
+            nullCategoryMap.put("percentage", 0);
+            topCategories.add(nullCategoryMap);
         }
 
         // memberId 정보를 추가합니다.
