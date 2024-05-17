@@ -2,17 +2,21 @@ spring:
   application:
     name: tms
 
+  jackson:
+    time-zone: Asia/Seoul
+
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 #    RDS
-    url: jdbc:mysql://tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com:3306/TMSDB
+    url: jdbc:mysql://tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com:3306/TMSDB?serverTimezone=UTC
     username: kscold
     password: tmdcks6502
 
     #    박혜정 local
-    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
-    username: root
-    password: 3516
+#    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
+#    username: root
+#    password: 3516
 
 
 #    김승찬 local

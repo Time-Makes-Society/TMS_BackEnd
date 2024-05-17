@@ -17,6 +17,9 @@ public interface UUIDArticleRepository extends JpaRepository<UUIDArticle, UUID> 
     @Query("SELECT a FROM UUIDArticle a WHERE a.category = :category ORDER BY a.createdDate DESC")
     Page<UUIDArticle> findByCategoryOrderByCreatedDateDesc(@Param("category") String category, Pageable pageable);
 
+    @Query("SELECT a FROM UUIDArticle a ORDER BY a.createdDate DESC")
+    Page<UUIDArticle> findAllOrderByCreatedDateDesc(Pageable pageable);
+
     List<UUIDArticle> findByTitle(String title);
 
     List<UUIDArticle> findByCategoryInOrderByArticleTimeAsc(String[] categories);

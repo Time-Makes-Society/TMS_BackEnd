@@ -32,14 +32,15 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         WebMvcConfigurer.super.addCorsMappings(registry);
 
-         /*     .allowedOrigins(
-                "https://heartfelt-baklava-2f7a5f.netlify.app",
-                "https://timemakessociety.vercel.app",
-                "http://localhost:3000",
-                "http://localhost:5173"
-                )*/
+
         registry.addMapping("/**")
-                .allowedOrigins("https://timemakessociety.vercel.app")
+                .allowedOrigins(
+                        "https://heartfelt-baklava-2f7a5f.netlify.app",
+                        "https://timemakessociety.vercel.app",
+                        "https://www.tms-official.site",
+                        "http://localhost:3000",
+                        "http://localhost:5173"
+                )
                 .allowedMethods("GET", "POST", "DELETE", "PUT", "HEAD", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization")

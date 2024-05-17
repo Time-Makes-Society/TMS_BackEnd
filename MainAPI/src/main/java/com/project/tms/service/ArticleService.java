@@ -51,8 +51,13 @@ public class ArticleService {
     }
 
     // 모든 가공한 news 테이블 데이터를 가져오는 메서드
-    public Page<UUIDArticle> noCategoryFindAll(Pageable pageable) {
+   /* public Page<UUIDArticle> noCategoryFindAll(Pageable pageable) {
         return uuidArticleRepository.findAll(pageable);
+    }*/
+
+    // 모든 가공한 news 테이블 데이터를 최신순으로 가져오는 메서드
+    public Page<UUIDArticle> noCategoryFindAll(Pageable pageable) {
+        return uuidArticleRepository.findAllOrderByCreatedDateDesc(pageable);
     }
 
     public Page<UUIDArticle> manyCategoryFindAll(String category, Pageable pageable) {
