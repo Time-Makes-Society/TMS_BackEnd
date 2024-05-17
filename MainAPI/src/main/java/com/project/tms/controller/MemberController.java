@@ -5,9 +5,11 @@ import com.project.tms.domain.MemberTag;
 import com.project.tms.domain.ReadTime;
 import com.project.tms.dto.MemberDto;
 import com.project.tms.dto.ReadTimeDto;
+import com.project.tms.dto.VerificationRequestDto;
 import com.project.tms.repository.ReadTimeRepository;
 import com.project.tms.service.LoginService;
 import com.project.tms.service.MemberService;
+import com.project.tms.service.VerificationService;
 import com.project.tms.web.login.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -27,7 +29,10 @@ import java.util.*;
 public class MemberController {
 
     private final MemberService memberService;
+
     private final LoginService loginService;
+
+    private final VerificationService verificationService;
 
     /**
      * 회원 가입
@@ -54,6 +59,36 @@ public class MemberController {
                     .body(responseBody);
         }
 //        return ResponseEntity.ok("회원가입이 완료되었습니다. 회원 loginId: " + memberDto.getLoginId());
+    }
+
+
+    // 메일 보내기
+    @PostMapping("/mail")
+    public ResponseEntity<String> registerUser(@RequestBody VerificationRequestDto request) {
+        String email = request.getEmail();
+        if (!memberService.isValidEmail(email)) {
+            return ResponseEntity.badRequest().body("유효하지 않은 이메일 주소입니다.");
+        }
+
+        String randomCode = memberService.generateRandomString();
+        try {
+            memberService.sendEmail(email, "TMS", "chan6502@gmail.com", "TMS 회원가입 인증 코드 메일입니다.",
+                    "저희 TMS(Time makes Society)는 회원분들의 정보를 절대로 따로 수집하지 않습니다.\n\n회원가입을 완료하려면 회원가입 페이지에서 다음 코드를 입력해주세요:\n" + randomCode);
+            verificationService.saveVerificationCode(email, randomCode);
+            return ResponseEntity.ok("인증 코드가 이메일로 전송되었습니다.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    // 메일 인증
+    @PostMapping("/verify")
+    public ResponseEntity<String> verifyCode(@RequestBody VerificationRequestDto request) {
+        if (verificationService.verifyCode(request.getEmail(), request.getCode())) {
+            return ResponseEntity.ok("인증되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증에 실패하였습니다.");
+        }
     }
 
 

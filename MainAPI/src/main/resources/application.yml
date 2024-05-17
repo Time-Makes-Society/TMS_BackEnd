@@ -13,7 +13,7 @@ spring:
     username: kscold
     password: tmdcks6502
 
-    #    박혜정 local
+#    박혜정 local
 #    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
 #    username: root
 #    password: 3516
@@ -50,6 +50,18 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: chan6502
+    password: yywaqxhzevunyckq
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 
 #logging.level:

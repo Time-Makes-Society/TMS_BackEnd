@@ -14,7 +14,7 @@ import java.io.IOException;
 public class LoginCheckFilter implements Filter {
 
     private static final String[] whiteList = {
-            "/api/login", "/api/logout", "/api/members/signup"
+            "/api/login", "/api/logout", "/api/members/signup", "/api/members/mail", "/api/members/verify"
             , "/api/articles/firstAPI/*", "/api/timerExpired", "/api/members/get/*", "/api/timerout",
             "/swagger-ui", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**"
     };
