@@ -2,11 +2,9 @@ package com.project.tms.controller;
 
 import com.project.tms.domain.Member;
 import com.project.tms.domain.MemberTag;
-import com.project.tms.domain.ReadTime;
 import com.project.tms.dto.MemberDto;
 import com.project.tms.dto.ReadTimeDto;
 import com.project.tms.dto.VerificationRequestDto;
-import com.project.tms.repository.ReadTimeRepository;
 import com.project.tms.service.LoginService;
 import com.project.tms.service.MemberService;
 import com.project.tms.service.VerificationService;
@@ -62,6 +60,7 @@ public class MemberController {
     }
 
 
+
     // 메일 보내기
     @PostMapping("/mail")
     public ResponseEntity<String> registerUser(@RequestBody VerificationRequestDto request) {
@@ -92,45 +91,6 @@ public class MemberController {
     }
 
 
-    /**
-     * 태그 선택
-     */
-//    @PostMapping("/{memberId}/tag")
-//    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<Long> tagIds) {
-//        Member member = memberService.findById(memberId).orElse(null);
-//        if (member == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        List<Tag> selectedTags = new ArrayList<>();
-//        for (Long tagId : tagIds) {
-//            Tag tag = tagRepository.findById(tagId).orElse(null);
-//            if (tag != null) {
-//                selectedTags.add(tag);
-//            }
-//        }
-//
-//        memberService.selectTags(member, selectedTags);
-//
-//
-//        return ResponseEntity.ok("Tags selected successfully");
-//    }
-
-    /**
-     * 파라미터 → String List
-     * ex) ["ECONOMY", "ENTERTAIN", "WORLD" ]
-     */
-//    @PostMapping("/{memberId}/tag")
-//    public ResponseEntity<String> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
-//        Member member = memberService.findById(memberId).orElse(null);
-//        if (member == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        memberService.selectTags(member, tagNames);
-//
-//        return ResponseEntity.ok("Tags selected successfully");
-//    }
     @PostMapping("/{memberId}/tag")
     public ResponseEntity<Map<String, Object>> selectTags(@PathVariable Long memberId, @RequestBody List<String> tagNames) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -232,53 +192,6 @@ public class MemberController {
         return null; // 세션이 없거나 로그인 정보가 없는 경우
     }
 
-//    @PostMapping("/readTime")
-//    public ResponseEntity<String> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
-//        memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
-//        return ResponseEntity.ok("읽기 시간이 추가되었습니다.");
-//    }
-
-//    @PostMapping("/readTime")
-//    public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
-//        try {
-//            memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
-//
-//            Map<String, Object> responseBody = new HashMap<>();
-//            responseBody.put("status", HttpStatus.OK.value());
-//            responseBody.put("message", "읽기 시간이 추가되었습니다.");
-//
-//            return ResponseEntity.ok(responseBody);
-//        } catch (Exception e) {
-//            Map<String, Object> errorResponse = new HashMap<>();
-//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");
-//
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(errorResponse);
-//        }
-//    }
-//
-//    @PostMapping("/readTime")
-//    public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
-//        try {
-//            // MemberService에서는 ReadTime 엔티티를 생성하여 저장하는 메서드를 호출하도록 변경
-//            memberService.addReadTimeToMember(readTimeDto.getMemberId(), LocalTime.parse(readTimeDto.getReadTime()));
-//
-//            Map<String, Object> responseBody = new HashMap<>();
-//            responseBody.put("status", HttpStatus.OK.value());
-//            responseBody.put("message", "읽기 시간이 추가되었습니다.");
-//
-//            return ResponseEntity.ok(responseBody);
-//        } catch (Exception e) {
-//            Map<String, Object> errorResponse = new HashMap<>();
-//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            errorResponse.put("message", "읽기 시간을 추가하는 중에 오류가 발생했습니다.");
-//
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(errorResponse);
-//        }
-//    }
-
 
     @PostMapping("/readTime")
     public ResponseEntity<Object> addReadTimeToMember(@RequestBody ReadTimeDto readTimeDto) {
@@ -303,23 +216,4 @@ public class MemberController {
         }
     }
 
-//    @PostMapping("/categoryReadTime")
-//    public ResponseEntity<Object> addReadTimeToCategory(@RequestBody ReadTime readTime) {
-//        try {
-//            memberService.addReadTimeToCategory(readTime.getMember().getId(), readTime.getCategory(), readTime.getReadTime());
-//
-//            Map<String, Object> responseBody = new HashMap<>();
-//            responseBody.put("status", HttpStatus.OK.value());
-//            responseBody.put("message", "읽은 시간이 카테고리에 추가되었습니다.");
-//
-//            return ResponseEntity.ok(responseBody);
-//        } catch (Exception e) {
-//            Map<String, Object> errorResponse = new HashMap<>();
-//            errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            errorResponse.put("message", "읽은 시간을 추가하는 중에 오류가 발생했습니다.");
-//
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(errorResponse);
-//        }
-//    }
 }

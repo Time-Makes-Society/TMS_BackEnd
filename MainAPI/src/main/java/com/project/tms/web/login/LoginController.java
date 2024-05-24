@@ -1,10 +1,8 @@
 package com.project.tms.web.login;
 
 import com.project.tms.domain.Member;
-import com.project.tms.dto.MemberDto;
 import com.project.tms.dto.MemberLoginDto;
 import com.project.tms.service.LoginService;
-import com.project.tms.web.LoginCheckFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -27,23 +25,6 @@ public class LoginController {
 
     private final LoginService loginService;
 
-//    @PostMapping("/login")
-    public ResponseEntity<Object> login(@Valid @RequestBody MemberDto memberDto, HttpSession session) {
-
-
-        log.info("로그인 실행");
-        Member loginMember = loginService.login(memberDto.getLoginId(), memberDto.getPassword());
-
-        if (loginMember == null) {
-            log.info("로그인 실패");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("아이디 또는 비밀번호가 맞지 않습니다.");
-        }
-
-        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
-        log.info("로그인 성공");
-        return ResponseEntity.ok("로그인 성공");
-    }
 
     @PostMapping("/login")
     public ResponseEntity<Object> loginV2(@Valid @RequestBody MemberLoginDto memberDto, HttpSession session, HttpServletRequest request, HttpServletResponse response) {

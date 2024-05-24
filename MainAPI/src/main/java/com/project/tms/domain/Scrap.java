@@ -18,8 +18,18 @@ import static jakarta.persistence.FetchType.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Scrap {
 
-//    @EmbeddedId
-//    private ScrapId id;
+    public Scrap(Member member, UUIDArticle uuidArticle) {
+        this.member = member;
+        this.uuidArticle = uuidArticle;
+        this.title = uuidArticle.getTitle();
+        this.content = uuidArticle.getContent();
+        this.createdDate = uuidArticle.getCreatedDate();
+        this.category = uuidArticle.getCategory();
+        this.image = uuidArticle.getImage();
+        this.link = uuidArticle.getLink();
+        this.articleTime = uuidArticle.getArticleTime();
+        this.publisher = uuidArticle.getPublisher();
+    }
 
     @Id
     @GeneratedValue
@@ -43,17 +53,5 @@ public class Scrap {
     private String link;
     private LocalTime articleTime;
 
-
-
-    public Scrap(Member member, UUIDArticle uuidArticle) {
-        this.member = member;
-        this.uuidArticle = uuidArticle;
-        this.title = uuidArticle.getTitle();
-        this.content = uuidArticle.getContent();
-        this.createdDate = uuidArticle.getCreatedDate();
-        this.category = uuidArticle.getCategory();
-        this.image = uuidArticle.getImage();
-        this.link = uuidArticle.getLink();
-        this.articleTime = uuidArticle.getArticleTime();
-    }
+    private String publisher;
 }

@@ -1,7 +1,10 @@
 package com.project.tms.dto;
 
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -17,6 +20,7 @@ public class CommentDto {
     private String articleTitle;
     private Long userId;
     private String memberName;
+    private String memberNickname;
 }
 
 

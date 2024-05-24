@@ -25,13 +25,6 @@ public class ScrapController {
     private final MemberService memberService;
 
 
-//    @PostMapping("/scrap")
-//    public ResponseEntity<String> scrapArticle(@RequestParam Long memberId, @RequestParam UUID articleId) {
-//        log.info("스크랩 실행");
-//        scrapService.scrapArticle(memberId, articleId);
-//        return ResponseEntity.ok("스크랩 성공");
-//    }
-
     /**
      * json 형식으로 파라미터 전달받도록 수정
      */
@@ -57,14 +50,6 @@ public class ScrapController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
         }
     }
-
-
-//    @PostMapping("/scrap/cancel")
-//    public ResponseEntity<String> scrapCancel(@RequestParam Long memberId, @RequestParam UUID articleId) {
-//        log.info("스크랩 취소 실행");
-//        scrapService.scrapCancel(memberId, articleId);
-//        return ResponseEntity.ok("스크랩 취소 완료");
-//    }
 
     /**
      * json 형식 전달받도록 수정

@@ -2,22 +2,20 @@ package com.project.tms.domain;
 
 import com.project.tms.domain.tag.Tag;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
+
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Getter @Setter
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
 public class MemberTag {
 
-//    @EmbeddedId
-//    private MemberTagId id;
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
 
     @ManyToOne(fetch = LAZY)

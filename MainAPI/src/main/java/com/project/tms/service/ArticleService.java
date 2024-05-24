@@ -2,12 +2,10 @@ package com.project.tms.service;
 
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.SilmilarityDto;
 import com.project.tms.dto.flask.FlaskResponse;
 import com.project.tms.dto.UUIDArticleDetailDto;
 import com.project.tms.dto.UUIDArticleListDto;
 import com.project.tms.dto.flask.RecommendArticleDto;
-import com.project.tms.dto.flask.RecommendedArticle;
 import com.project.tms.repository.ArticleRepository;
 import com.project.tms.repository.UUIDArticleRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +48,6 @@ public class ArticleService {
         return articleRepository.findAll();
     }
 
-    // 모든 가공한 news 테이블 데이터를 가져오는 메서드
-   /* public Page<UUIDArticle> noCategoryFindAll(Pageable pageable) {
-        return uuidArticleRepository.findAll(pageable);
-    }*/
 
     // 모든 가공한 news 테이블 데이터를 최신순으로 가져오는 메서드
     public Page<UUIDArticle> noCategoryFindAll(Pageable pageable) {
@@ -89,7 +83,8 @@ public class ArticleService {
         articleDetailDTO.setLikeCount(uuidArticle.getLikeCount());
 
         // 시간대 변환
-        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+//        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+        LocalDateTime createdDate = uuidArticle.getCreatedDate();
         articleDetailDTO.setCreatedDate(createdDate);
 
         return articleDetailDTO;
@@ -108,7 +103,8 @@ public class ArticleService {
             dto.setPublisher(uuidArticle.getPublisher());
 
             // 시간대 변환
-            LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+//            LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+            LocalDateTime createdDate = uuidArticle.getCreatedDate();
             dto.setCreatedDate(createdDate);
             return dto;
         });
@@ -126,7 +122,8 @@ public class ArticleService {
         dto.setPublisher(uuidArticle.getPublisher());
 
         // 시간대 변환
-        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+//        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
+        LocalDateTime createdDate = uuidArticle.getCreatedDate();
         dto.setCreatedDate(createdDate);
         return dto;
     }
@@ -229,22 +226,6 @@ public class ArticleService {
         }
     }
 
-    // 플라스크에서 유사도를 계산하여 유사한 기사를 반환받는 메서드
-    /*public FlaskResponse fetchFlaskResponse(String url) {
-        try {
-            // Flask 서버에 GET 요청 보내고 응답 받기
-            ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return responseEntity.getBody();
-            } else {
-                log.error("GET 요청 실패: {}", responseEntity.getStatusCodeValue());
-                return null;
-            }
-        } catch (Exception e) {
-            log.error("GET 요청 실패:", e);
-            return null;
-        }
-    }*/
 
     public List<RecommendArticleDto> fetchAndMapArticles(String url) {
         FlaskResponse flaskResponse = fetchFlaskResponse(url);
@@ -291,46 +272,15 @@ public class ArticleService {
         }
     }
 
-   /* public SilmilarityDto fetchFlaskResponse(String url) {
-        try {
-            ResponseEntity<FlaskResponse> responseEntity = restTemplate.getForEntity(URI.create(url), FlaskResponse.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                FlaskResponse flaskResponse = responseEntity.getBody();
-                SilmilarityDto silmilarityDto = new SilmilarityDto();
-                List<RecommendedArticle> recommendedArticles = flaskResponse.getRecommendedArticles();
 
-                // 추천된 기사 목록을 순회하면서 DTO에 추가
-                List<UUID> uuidList = new ArrayList<>();
-                List<Double> similarityList = new ArrayList<>();
-                List<String> titleList = new ArrayList<>();
-                for (RecommendedArticle article : recommendedArticles) {
-                    uuidList.add(UUID.fromString(article.getUuid()));
-                    similarityList.add(article.getSimilarity());
-                    titleList.add(article.getTitle());
-                }
-
-                // DTO에 데이터 설정
-                silmilarityDto.setUuid(uuidList);
-                silmilarityDto.setSimilarity(similarityList);
-                silmilarityDto.setTitle(titleList);
-
-                return silmilarityDto;
-            } else {
-                log.error("GET 요청 실패: {}", responseEntity.getStatusCodeValue());
-                return null;
-            }
-        } catch (Exception e) {
-            log.error("GET 요청 실패:", e);
-            return null;
-        }
-    }*/
-
-    // 카테고리에 해당하는 기사를 뽑아 Target 시간에 가장가까운 articleTime을 조합하여 추천해주는 메서드
     public List<UUIDArticleListDto> findClosestToTargetTimeByCategories(String[] categories, LocalTime targetTime, int pageSize) {
-        // 해당 카테고리에 해당하는 모든 기사 가져오기 및 articleTime 기준으로 오름차순 정렬
+        // 해당 카테고리에 해당하는 모든 기사 가져오기
         List<UUIDArticle> allArticles = uuidArticleRepository.findByCategoryInOrderByArticleTimeAsc(categories);
 
-        // 탐욕 알고리즘을 사용하여 가장 가까운 기사 선택
+        // 모든 기사를 무작위로 섞음
+        Collections.shuffle(allArticles);
+
+        // 타겟 시간에 가장 가까운 기사 선택
         List<UUIDArticle> recommendedArticles = new ArrayList<>();
         int totalSeconds = 0;
         for (UUIDArticle article : allArticles) {
@@ -344,8 +294,10 @@ public class ArticleService {
             }
         }
 
-        // UUIDArticle를 UUIDArticleListDto로 변환하여 반환
+        // 선택된 기사를 DTO로 변환하여 반환
         return entityToListDto(recommendedArticles, pageSize);
     }
+
+
 }
 

@@ -21,15 +21,6 @@ public class TimerController {
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
 
-//    @PostMapping("/setTimer")
-//    public ResponseEntity<String> setTimer(@RequestBody UserSetTimeDTO userSetTimeDTO) {
-//        int userSetTime = userSetTimeDTO.getUserSetTime();
-//        System.out.println("사용자가 설정한 시간: " + userSetTime + "초");
-//
-//        // 응답 보내기
-//        return ResponseEntity.ok("타이머 설정이 완료되었습니다.");
-//    }
-
     @PostMapping("/setTimer")
     public ResponseEntity<String> setTimer(HttpSession session, @RequestBody UserSetTimeDTO userSetTimeDTO) {
         int userSetTime = userSetTimeDTO.getUserSetTime();
@@ -45,12 +36,7 @@ public class TimerController {
         return ResponseEntity.ok("타이머 설정이 완료되었습니다.");
     }
 
-    private void sendTimerExpiredRequest() {
 
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/api/timerExpired", String.class);
-        System.out.println("타이머 만료 요청 응답: " + response.getBody());
-    }
     private void sendTimerExpiredRequestLogout(HttpSession session) {
 
         log.info("타이머 만료");
@@ -63,11 +49,6 @@ public class TimerController {
         restTemplate.getForObject("http://localhost:8080/api/timerout", String.class);
     }
 
-//    @GetMapping("/timerExpired")
-//    public ResponseEntity<String> notifyTimerExpired() {
-//        String message = "타이머 종료";
-//        return ResponseEntity.ok(message);
-//    }
 
     @GetMapping("/timerExpired")
     public ResponseEntity<String> notifyTimerExpired() {
@@ -76,15 +57,6 @@ public class TimerController {
         return ResponseEntity.ok(message);
     }
 
-//    private void logoutUser() {
-//        RestTemplate restTemplate = new RestTemplate();
-//        ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8080/api/logout", null, String.class);
-//        if (response.getStatusCode().is2xxSuccessful()) {
-//            log.info("사용자 로그아웃 성공");
-//        } else {
-//            log.error("사용자 로그아웃 실패");
-//        }
-//    }
 
     private void logoutUser(HttpSession session) {
         if (session != null) {

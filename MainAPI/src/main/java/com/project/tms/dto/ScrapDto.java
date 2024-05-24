@@ -1,6 +1,6 @@
 package com.project.tms.dto;
 
-import com.project.tms.domain.UUIDArticle;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,5 +21,6 @@ public class ScrapDto {
     private String image;
     private String link;
     private LocalTime articleTime;
+    private String publisher;
 
 }

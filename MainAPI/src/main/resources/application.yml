@@ -9,9 +9,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 #    RDS
-    url: jdbc:mysql://tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com:3306/TMSDB?serverTimezone=UTC
-    username: kscold
-    password: tmdcks6502
+#    url: jdbc:mysql://tmsdb.clgq6ysgupxk.ap-northeast-2.rds.amazonaws.com:3306/TMSDB?serverTimezone=UTC
+#    username: kscold
+#    password: tmdcks6502
 
 #    박혜정 local
 #    url: jdbc:mysql://localhost:3306/tms?serverTimezone=UTC
@@ -20,9 +20,9 @@ spring:
 
 
 #    김승찬 local
-#    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
-#    username: root
-#    password: Tmdcks6502@
+    url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
+    username: root
+    password: Tmdcks6502@
 
 
   #  jpa:
@@ -42,9 +42,10 @@ spring:
         format_sql: true
         use_sql_comments: true
         jdbc:
-          time_zone=UTC:
+          time_zone: Asia/Seoul
     hibernate:
       ddl-auto: create
+#      ddl-auto: none
       naming:
         # 네이밍할때 _ 안붙이고 카멜케이스로 만들어주는 속성
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

@@ -24,6 +24,7 @@ public interface UUIDArticleRepository extends JpaRepository<UUIDArticle, UUID> 
 
     List<UUIDArticle> findByCategoryInOrderByArticleTimeAsc(String[] categories);
 
+
     long countByCategoryIn(List<String> categories);
 
 

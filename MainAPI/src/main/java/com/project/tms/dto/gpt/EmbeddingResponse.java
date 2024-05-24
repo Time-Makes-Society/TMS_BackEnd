@@ -15,14 +15,6 @@ public class EmbeddingResponse {
     @JsonProperty("data")
     private List<DataItem> data;
 
-    /*public List<Double> getEmbedding() {
-        if (data != null && !data.isEmpty()) {
-            DataItem dataItem = data.get(0);
-            return dataItem != null ? dataItem.getEmbedding() : null;
-        }
-        return null;
-    }*/
-
     @Getter
     @Setter
     @NoArgsConstructor

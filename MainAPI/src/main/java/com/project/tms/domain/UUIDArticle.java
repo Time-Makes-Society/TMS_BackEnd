@@ -30,10 +30,15 @@ public class UUIDArticle {
     private String content;
 
     private String category;
+
     private String image;
+
     private String link;
+
     private String publisher;
+
     private LocalTime articleTime;
+
     private LocalDateTime createdDate;
 
     @Column(columnDefinition = "text")
@@ -43,7 +48,6 @@ public class UUIDArticle {
     @Column(nullable = false)
     private Long likeCount = 0L; // 좋아요 수 필드 추가 및 초기값 설정
 
-//    @OneToMany(mappedBy = "uuidArticle")
     @OneToMany(mappedBy = "uuidArticle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticleLike> likedByMembers = new ArrayList<>();
 

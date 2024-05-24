@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -23,9 +22,6 @@ public class ReadTime {
     @JoinColumn(name = "member_id")
     private Member member;
 
-//    @ManyToOne(fetch = LAZY)
-//    @JoinColumn(name = "uuid_id")
-//    private UUIDArticle uuidArticle;
 
     @Column(name = "category")
     private String category;

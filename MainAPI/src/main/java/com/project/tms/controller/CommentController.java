@@ -4,14 +4,13 @@ import com.project.tms.domain.Comment;
 import com.project.tms.domain.Member;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.CommentDto;
-import com.project.tms.dto.MemberDto;
 import com.project.tms.service.ArticleService;
 import com.project.tms.service.CommentService;
+import com.project.tms.service.MemberService;
 import com.project.tms.web.login.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +24,8 @@ import java.util.UUID;
 public class CommentController {
 
     private final CommentService commentService;
+
+    private final MemberService memberService;
 
     private final ArticleService articleService;
 
@@ -49,6 +50,7 @@ public class CommentController {
         }
     }
 
+
     @GetMapping("/{articleId}")
     public ResponseEntity<Object> getCommentsByArticle(@PathVariable("articleId") UUID uuid) {
         try {
@@ -70,6 +72,7 @@ public class CommentController {
         }
     }
 
+
     @PutMapping("/{articleId}/{commentId}")
     public ResponseEntity<Object> updateComment(@PathVariable("articleId") UUID uuid,
                                                 @PathVariable("commentId") Long commentId,
@@ -82,6 +85,10 @@ public class CommentController {
                 if (loginMember != null) {
                     UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
 
+                    if (uuidArticle == null) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 기사 id입니다.");
+                    }
+
                     // 댓글의 작성자 정보를 가져옴
                     CommentDto commentDto = commentService.getCommentDtoById(commentId);
 
@@ -90,7 +97,7 @@ public class CommentController {
                         if (updatedCommentDto != null) {
                             return ResponseEntity.ok(updatedCommentDto);
                         } else {
-                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 기사 id입니다.");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("댓글 업데이트 중 오류가 발생했습니다.");
                         }
                     } else {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("댓글은 본인만 수정할 수 있습니다.");

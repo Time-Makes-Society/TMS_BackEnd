@@ -1,7 +1,6 @@
 package com.project.tms;
 
 import com.project.tms.domain.tag.*;
-import com.project.tms.dto.MemberDto;
 import com.project.tms.service.LoginService;
 import com.project.tms.tag.*;
 import com.project.tms.service.MemberService;
@@ -28,7 +27,7 @@ public class TestDataInit {
 
     @PostConstruct
     public void init() {
-        createTestMember();
+//        createTestMember();
         createTestCulture();
         createTestEconomy();
         createTestEntertain();
@@ -40,7 +39,7 @@ public class TestDataInit {
         createTestWorld();
     }
 
-    private void createTestMember() {
+  /*  private void createTestMember() {
 
         MemberDto memberDto = new MemberDto();
         memberDto.setLoginId("test");
@@ -50,7 +49,7 @@ public class TestDataInit {
 
         memberService.join(memberDto);
         loginService.login("test", "test!");
-    }
+    }*/
     private void createTestCulture() {
         Culture culture = new Culture();
         // 필요한 Culture 엔티티의 속성 설정
