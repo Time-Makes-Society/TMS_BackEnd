@@ -18,7 +18,6 @@ spring:
 #    username: root
 #    password: 3516
 
-
 #    김승찬 local
     url: jdbc:mysql://localhost:3306/TMSDB?serverTimezone=UTC
     username: root

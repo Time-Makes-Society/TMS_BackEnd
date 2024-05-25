@@ -1,5 +1,6 @@
 package com.project.tms.service;
 
+
 import com.project.tms.domain.Article;
 import com.project.tms.domain.UUIDArticle;
 import com.project.tms.dto.flask.FlaskResponse;
@@ -37,7 +38,6 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
 
-    // 임베딩을 위해서
     private final GptService gptService;
 
     private final RestTemplate restTemplate;
@@ -82,8 +82,6 @@ public class ArticleService {
         articleDetailDTO.setArticleTime(uuidArticle.getArticleTime());
         articleDetailDTO.setLikeCount(uuidArticle.getLikeCount());
 
-        // 시간대 변환
-//        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
         LocalDateTime createdDate = uuidArticle.getCreatedDate();
         articleDetailDTO.setCreatedDate(createdDate);
 
@@ -102,8 +100,6 @@ public class ArticleService {
             dto.setArticleTime(uuidArticle.getArticleTime());
             dto.setPublisher(uuidArticle.getPublisher());
 
-            // 시간대 변환
-//            LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
             LocalDateTime createdDate = uuidArticle.getCreatedDate();
             dto.setCreatedDate(createdDate);
             return dto;
@@ -121,8 +117,6 @@ public class ArticleService {
         dto.setArticleTime(uuidArticle.getArticleTime());
         dto.setPublisher(uuidArticle.getPublisher());
 
-        // 시간대 변환
-//        LocalDateTime createdDate = uuidArticle.getCreatedDate().minusHours(9); // UTC 시간에서 9시간을 빼서 한국 시간대로 변환
         LocalDateTime createdDate = uuidArticle.getCreatedDate();
         dto.setCreatedDate(createdDate);
         return dto;
@@ -172,7 +166,6 @@ public class ArticleService {
             uuidArticle.setImage(article.getImage());
             uuidArticle.setLink(article.getLink());
 
-
             // content의 글자 수 계산
             int contentLength = article.getContent().length();
 
@@ -190,12 +183,32 @@ public class ArticleService {
             LocalTime articleTime = LocalTime.of(0, minutes, seconds);
             uuidArticle.setArticleTime(articleTime);
 
-            // 새로운 엔티티 저장
+            String summarizeContent = gptService.summarizeContent(article.getContent()); // gpt한테 요약을 요청함
+            uuidArticle.setGptContent(summarizeContent);
+
+
+            // 먼저 uuidArticle을 저장하여 ID를 생성
             uuidArticleRepository.save(uuidArticle);
 
-            // 임베딩 값을 계산하고 저장
-            gptService.calculateAndSaveEmbedding(uuidArticle);
+            // title, content, gptContent 임베딩 값을 계산하고 저장
+            gptService.calculateAndSaveTitleEmbedding(uuidArticle);
+
+            gptService.calculateAndSaveContentEmbedding(uuidArticle);
+
+            gptService.calculateAndSaveGptContentEmbedding(uuidArticle);
+
+            calculateEmbedding(uuidArticle);
         }
+    }
+
+
+    private void calculateEmbedding(UUIDArticle article) {
+        Long similarity = gptService.calculateEmbeddingDiffContent(article.getId()); // uuid를 사용하여 유사도 계산
+
+        article.setDiffContentEmbedding(similarity);
+
+        // 다시 저장하여 업데이트된 내용 반영
+        uuidArticleRepository.save(article);
     }
 
     // 플라스크 전처리 서버에 HTTP GET 요청 보내는 메서드
@@ -297,7 +310,5 @@ public class ArticleService {
         // 선택된 기사를 DTO로 변환하여 반환
         return entityToListDto(recommendedArticles, pageSize);
     }
-
-
 }
 

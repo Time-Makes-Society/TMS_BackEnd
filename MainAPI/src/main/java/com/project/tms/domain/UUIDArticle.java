@@ -27,7 +27,10 @@ public class UUIDArticle {
 
     @Lob
     @Column(columnDefinition = "text")
-    private String content;
+    private String content; // 원문 내용
+
+    @Column(columnDefinition = "text")
+    private String gptContent; // 요약한 내용
 
     private String category;
 
@@ -42,8 +45,15 @@ public class UUIDArticle {
     private LocalDateTime createdDate;
 
     @Column(columnDefinition = "text")
-    private String embedding; // 추천서비스를 위한 embedding 값을 이용함
+    private String embedding; // 추천서비스를 위한 타이틀 embedding 값을 저장 필드
 
+    @Column(columnDefinition = "text")
+    private String contentEmbedding; // 요약하기 전의 내용 embedding 값
+
+    @Column(columnDefinition = "text")
+    private String gptContentEmbedding; // 요약한 후의 embedding 값
+
+    private Long diffContentEmbedding;// 요약하기 전과 요약한 후의 임베딩 차이
 
     @Column(nullable = false)
     private Long likeCount = 0L; // 좋아요 수 필드 추가 및 초기값 설정

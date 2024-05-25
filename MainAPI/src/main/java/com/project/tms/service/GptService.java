@@ -1,18 +1,20 @@
 package com.project.tms.service;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.tms.client.GptClient;
 import com.project.tms.domain.UUIDArticle;
-import com.project.tms.dto.gpt.EmbeddingRequest;
-import com.project.tms.dto.gpt.ChatRequest;
-import com.project.tms.dto.gpt.EmbeddingResponse;
-import com.project.tms.dto.gpt.Message;
+import com.project.tms.dto.gpt.*;
 import com.project.tms.repository.UUIDArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,15 +29,10 @@ public class GptService {
 
     private final GptClient gpt;
 
-    public String articleFindOneToConvertContent(UUID uuid) {
+    private final RestTemplate restTemplate;
 
-        UUIDArticle article = uuidArticleRepository.findById(uuid)
-                .orElseThrow(() -> new EntityNotFoundException("기사를 찾지 못했습니다. " + uuid));
+    private final ObjectMapper objectMapper;
 
-
-        String articleContent = article.getContent().toString();
-        return articleContent;
-    }
 
     // 프롬프트 엔지니어링 메서드
     public ChatRequest startEngineerPrompt(String articleContent) {
@@ -76,14 +73,50 @@ public class GptService {
         return "|원문 기사 데이터: " + articleContent + " |";
     }
 
+
+    // ArticleContorller에서 데이터를 전처리할 때 gptContent 필드에 저장시키기 위한 메서드
+    public String summarizeContent(String articleContent) {
+        // 내용을 요약해 주는 프롬프트 엔지니어링을 거침
+        ChatRequest request = startEngineerPrompt(articleContent);
+
+        // GptClient를 통해 chat 요청을 보내고 응답을 받음
+        ChatResponse response = gpt.chat(request);
+
+        // 요약된 내용을 Choice 객체에서 가져와서 content 필드에 설정
+        String summarizedContent = response.getChoices().get(0).getMessage().getContent();
+
+
+        return summarizedContent;
+    }
+
     public String articleFindOneToConvertTitle(UUID uuid) {
 
         UUIDArticle article = uuidArticleRepository.findById(uuid)
-                .orElseThrow(() -> new EntityNotFoundException("기사를 찾지 못했습니다. " + uuid));
+                .orElseThrow(() -> new EntityNotFoundException("제목에 맞는 기사를 찾지 못했습니다. " + uuid));
 
         String articleTitle = article.getTitle().toString();
         return articleTitle;
     }
+
+    public String  articleFindOneToConvertContent(UUID uuid) {
+
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new EntityNotFoundException("기사를 찾지 못했습니다. " + uuid));
+
+
+        String articleContent = article.getContent().toString();
+        return articleContent;
+    }
+
+    public String articleFindOneToConvertGptContent(UUID uuid) {
+
+        UUIDArticle article = uuidArticleRepository.findById(uuid)
+                .orElseThrow(() -> new EntityNotFoundException("제목에 맞는 기사를 찾지 못했습니다. " + uuid));
+
+        String articleGptContent = article.getGptContent().toString();
+        return articleGptContent;
+    }
+
 
     public EmbeddingRequest calculateEmbeddingRequest(String articleTitle) {
         EmbeddingRequest request = new EmbeddingRequest();
@@ -93,7 +126,30 @@ public class GptService {
     }
 
 
-    public String calculateAndSaveEmbedding(UUIDArticle uuidArticle) {
+    public Long calculateEmbeddingDiffContent(UUID uuid) {
+        String url = "http://localhost:8082/article/similarity/" + uuid;
+//        String url = "https://2pikxq09x2.execute-api.ap-northeast-2.amazonaws.com/dev/article/similarity/" + uuid;
+        try {
+            log.info("Requesting similarity for UUID: " + uuid);
+            String response = restTemplate.getForObject(url, String.class);
+            log.info("Response received: " + response);
+            JsonNode responseJson = objectMapper.readTree(response);
+            if (responseJson.has("similarity")) {
+                double similarity = responseJson.get("similarity").asDouble();
+                return Math.round(similarity * 100);
+            } else {
+                throw new RuntimeException("Similarity not found in response");
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("Error requesting similarity: " + e.getMessage());
+            throw new RuntimeException("Error requesting similarity: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeException("Error parsing response from Flask server", e);
+        }
+    }
+
+
+    public void calculateAndSaveTitleEmbedding(UUIDArticle uuidArticle) {
         try {
             String articleTitle = articleFindOneToConvertTitle(uuidArticle.getId());
 
@@ -112,11 +168,59 @@ public class GptService {
             // UUIDArticle 엔티티 저장
             uuidArticleRepository.save(uuidArticle);
 
-            return embedding;
         } catch (Exception e) {
             throw new RuntimeException("임베딩 값을 계산하고 저장하는 중에 오류가 발생했습니다.", e);
         }
     }
 
+    // ArticleContorller에서 데이터를 전처리할 때 gptContent 필드에 저장시키기 위한 메서드
+    public void calculateAndSaveContentEmbedding(UUIDArticle uuidArticle) {
+        try {
+            String articleContent = articleFindOneToConvertContent(uuidArticle.getId());
+
+            // 기사 제목을 사용하여 임베딩 요청 생성
+            EmbeddingRequest request = calculateEmbeddingRequest(articleContent);
+
+            // 생성된 임베딩 요청을 사용하여 임베딩 값을 요청
+            EmbeddingResponse response = gpt.embedding(request);
+
+            // 임베딩 값을 문자열로 변환하여 반환
+            String embedding = response.getData().get(0).getEmbedding().toString();
+
+            // UUIDArticle 엔티티에 임베딩 값 저장
+            uuidArticle.setContentEmbedding(embedding);
+
+            // UUIDArticle 엔티티 저장
+            uuidArticleRepository.save(uuidArticle);
+
+        } catch (Exception e) {
+            throw new RuntimeException("임베딩 값을 계산하고 저장하는 중에 오류가 발생했습니다.", e);
+        }
+    }
+
+    // ArticleContorller에서 데이터를 전처리할 때 gptContent 필드에 저장시키기 위한 메서드
+    public void calculateAndSaveGptContentEmbedding(UUIDArticle uuidArticle) {
+        try {
+            String articleGptContent = articleFindOneToConvertGptContent(uuidArticle.getId());
+
+            // 기사 제목을 사용하여 임베딩 요청 생성
+            EmbeddingRequest request = calculateEmbeddingRequest(articleGptContent);
+
+            // 생성된 임베딩 요청을 사용하여 임베딩 값을 요청
+            EmbeddingResponse response = gpt.embedding(request);
+
+            // 임베딩 값을 문자열로 변환하여 반환
+            String embedding = response.getData().get(0).getEmbedding().toString();
+
+            // UUIDArticle 엔티티에 임베딩 값 저장
+            uuidArticle.setGptContentEmbedding(embedding);
+
+            // UUIDArticle 엔티티 저장
+            uuidArticleRepository.save(uuidArticle);
+
+        } catch (Exception e) {
+            throw new RuntimeException("임베딩 값을 계산하고 저장하는 중에 오류가 발생했습니다.", e);
+        }
+    }
 }
 
