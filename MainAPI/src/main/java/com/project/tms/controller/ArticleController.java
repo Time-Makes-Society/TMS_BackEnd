@@ -43,8 +43,8 @@ public class ArticleController {
 
         // Flask 서버 엔트포인트로 GET 요청을 보냄
         String encodedCategory = URLEncoder.encode(category, StandardCharsets.UTF_8);
-        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
-//        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
+//        String flaksServerUrl = "http://localhost:8081/newssave/" + encodedCategory;
+        String flaksServerUrl = "https://quh62kky3f.execute-api.ap-northeast-2.amazonaws.com/dev/newssave/" + encodedCategory;
         articleService.sendGetRequestToFlask(flaksServerUrl);
 
         // 모든 pre_news에 있는 데이터를 가져옴

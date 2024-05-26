@@ -13,13 +13,25 @@ import java.util.UUID;
 public class UUIDArticleDetailDto {
 
     private UUID id;
+
     private String title;
+
     private String content;
+
+    private String gptContent;
+
+    private Long Similarity;
+
     private String category;
+
     private String image;
+
     private String link;
+
     private LocalTime articleTime;
+
     private LocalDateTime createdDate;
+
     private Long likeCount;
 
 }

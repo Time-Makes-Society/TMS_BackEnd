@@ -39,7 +39,7 @@ public class GptController {
             String articleContent = gptService.articleFindOneToConvertContent(uuid);
 
             // 내용을 요약해 주는 프롬프트 엔지니어링을 거침
-            ChatRequest request = gptService.startEngineerPrompt(articleContent);
+            ChatRequest request = gptService.restartEngineerPrompt(articleContent);
 
             // GptClient를 통해 chat 요청을 보내고 응답을 받음
             ChatResponse response = gpt.chat(request);
@@ -47,15 +47,24 @@ public class GptController {
             // 요약된 내용을 Choice 객체에서 가져와서 content 필드에 설정
             String summarizedContent = response.getChoices().get(0).getMessage().getContent();
 
+            // 기사 객체를 가져와서 요약된 내용을 설정
             UUIDArticle uuidArticle = articleService.articleFindOne(uuid).orElse(null);
+            if (uuidArticle == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유효하지 않은 기사 id입니다.");
+            }
 
-            uuidArticle.setContent(summarizedContent);
+            uuidArticle.setGptContent(summarizedContent);
 
+            // 요약 내용 저장 및 유사도 계산 후 저장
+            gptService.reCalculateAndSaveGptDiffContent(uuidArticle);
+
+            // DTO로 변환하여 응답
             UUIDArticleDetailDto uuidArticleDetailDto = articleService.entityToDetailDto(uuidArticle);
 
             return ResponseEntity.ok(uuidArticleDetailDto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유효하지 않은 기사 id입니다.");
+            log.error("Error processing summarize request", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("요약 처리 중 오류가 발생했습니다.");
         }
     }
 

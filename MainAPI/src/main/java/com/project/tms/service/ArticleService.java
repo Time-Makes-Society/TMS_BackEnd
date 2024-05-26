@@ -76,6 +76,8 @@ public class ArticleService {
         articleDetailDTO.setId(uuidArticle.getId());
         articleDetailDTO.setTitle(uuidArticle.getTitle());
         articleDetailDTO.setContent(uuidArticle.getContent());
+        articleDetailDTO.setGptContent(uuidArticle.getGptContent());
+        articleDetailDTO.setSimilarity(uuidArticle.getDiffContentEmbedding());
         articleDetailDTO.setCategory(uuidArticle.getCategory());
         articleDetailDTO.setImage(uuidArticle.getImage());
         articleDetailDTO.setLink(uuidArticle.getLink());
